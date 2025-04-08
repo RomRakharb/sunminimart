@@ -1,0 +1,12 @@
+{
+	"name": "leptos template",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"features": {
+		"ghcr.io/devcontainers/features/rust:1": {
+			"profile": "default"
+		},
+		"ghcr.io/devcontainers/features/node:1": {}
+	},
+	"forwardPorts": [ 3000 ],
+	"postCreateCommand": "echo 'To start: bash .devcontainer/install.sh'"
+}
