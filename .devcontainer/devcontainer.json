@@ -7,6 +7,6 @@
 		},
 		"ghcr.io/devcontainers/features/node:1": {}
 	},
-	"forwardPorts": [ 3000 ],
+	"forwardPorts": [ 3000, 3001, 3306 ],
 	"postCreateCommand": "echo 'To start: bash .devcontainer/install.sh'"
 }
