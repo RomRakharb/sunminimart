@@ -27,14 +27,6 @@ rustup component add rust-analyzer
 npm i -g vscode-langservers-extracted
 rustup target add wasm32-unknown-unknown
 
-mkdir -p ~/.helix
-echo '[[language]]
-name = "rust"
-
-[language-server.rust-analyzer.config]
-cargo = { allFeatures = true }
-check.command = "clippy"' > ~/.helix/languages.toml
-
 echo
 echo "---------------------"
 echo "install script ends"
