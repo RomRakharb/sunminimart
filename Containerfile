@@ -12,7 +12,8 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup component add rust-analyzer && \
     rustup target add wasm32-unknown-unknown && \
     cargo install cargo-binstall && \
-    cargo binstall -y cargo-leptos leptosfmt
+    cargo install sqlx-cli --no-default-features --features rustls,mysql && \
+    cargo binstall -y cargo-leptos leptosfmt sqlx-cli
 
 RUN npm install -g vscode-langservers-extracted
 
