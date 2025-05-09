@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    tty: true
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    volumes:
+      - ./:/workdir
+      - ${HOME}/.gitconfig:/etc/gitconfig
+      - ${HOME}/.ssh:/root/.ssh
+      - ${HOME}/.config/helix/config.toml:/workdir/.helix/config.toml
