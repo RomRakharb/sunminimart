@@ -1,4 +1,13 @@
 body {
 	font-family: sans-serif;
-	text-align: center;
+}
+
+#inventory {
+	border-style: solid;
+
+	form {
+		display: grid;
+		grid-template-columns: auto auto;
+		width: 40vw;
+	}
 }
