@@ -1,11 +1,12 @@
-use leptos::prelude::*;
 use leptos::form::ActionForm;
+use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{Route, Router, Routes},
     StaticSegment,
 };
-// use crate::datebase::connect_database;
+
+use crate::server_function::SearchProduct;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -64,8 +65,8 @@ fn HomePage() -> impl IntoView {
 }
 
 #[component]
-fn InventoryPage() -> impl IntoView {
-    let search_product =ServerAction::<SearchProduct>::new();
+fn ProductPage() -> impl IntoView {
+    let search_product = ServerAction::<SearchProduct>::new();
     let value = search_product.value();
     let has_error = move || value.with(|val| matches!(val, Some(Err(_))));
 
@@ -83,26 +84,24 @@ fn InventoryPage() -> impl IntoView {
     }
 }
 
-#[server]
-async fn search_product(barcode: String) -> Result<String, ServerFnError> {
-    let pool = database::connect_database();
-    Ok(barcode)
-}
-
-#[cfg(feature = "ssr")]
-mod database {
-    use sqlx::mysql::MySqlPool;
-    use tokio::sync::OnceCell;
-    use std::env;
-    use dotenv::dotenv;
-
-    static POOL: OnceCell<MySqlPool> = OnceCell::const_new();
-
-    pub async fn connect_database() -> &'static MySqlPool {
-        POOL.get_or_init( async || {
-            dotenv().ok();
-            let url = env::var("DATABASE_URL").unwrap_or_default();
-            MySqlPool::connect(&url).await.unwrap()
-        }).await
+#[component]
+fn InventoryPage() -> impl IntoView {
+    view! {
+        <div>
+            <h1>"คลังสินค้า"</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>"ลำดับ"</th>
+                        <th>"รหัสสินค้า"</th>
+                        <th>"ชื่อ"</th>
+                        <th>"จำนวน"</th>
+                        <th>"ทุน"</th>
+                        <th>"ราคา"</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     }
 }

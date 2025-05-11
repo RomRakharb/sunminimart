@@ -15,10 +15,13 @@ leptos_axum = { version = "0.7", optional = true }
 leptos_meta = { version = "0.7" }
 tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 wasm-bindgen = { version = "=0.2", optional = true }
-sqlx = { version = "0.8.5", features = [ "runtime-tokio", "tls-rustls", "mysql" ] , optional = true }
+sqlx = { version = "0.8.5", features = [ "runtime-tokio", "tls-rustls", "mysql", "chrono", "bigdecimal", "rust_decimal" ] , optional = true }
 dotenv = { version = "0.15.0", optional = true }
+serde = "1.0.219"
+rust_decimal = "1.37.1"
 
 [features]
+default = [ "ssr" ]
 hydrate = [
     "leptos/hydrate",
     "dep:console_error_panic_hook",
