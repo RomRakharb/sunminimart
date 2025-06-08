@@ -1,11 +1,8 @@
-use iced::{
-    self, Element, Font,
-    widget::{button, column, text},
-};
+use iced::widget::{column, text};
+use iced::{self, Element, Font};
 
-use sunminimart::inventory::Inventory;
-use sunminimart::main::{MainMessage, main_update, main_view};
-use sunminimart::{Message, Page, State};
+use sunminimart::screen::{home, inventory};
+use sunminimart::{Message, Screen, State};
 
 fn main() -> iced::Result {
     iced::application("Sunminimart", update, view)
@@ -15,15 +12,15 @@ fn main() -> iced::Result {
 }
 
 fn update(state: &mut State, message: Message) {
-    match &state.page {
-        Page::MainPage => main_update(state, message),
-        Page::InventoryPage(inventory) => {}
+    match &state.screen {
+        Screen::Home => home::update(state, message),
+        Screen::Inventory(inventory) => {}
     }
 }
 
 fn view(state: &State) -> Element<Message> {
-    match &state.page {
-        Page::MainPage => main_view(),
-        Page::InventoryPage(inventory) => column![text("text")].into(),
+    match &state.screen {
+        Screen::Home => home::view(),
+        Screen::Inventory(inventory) => column![text("text")].into(),
     }
 }

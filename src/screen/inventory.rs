@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use rust_decimal::Decimal;
 
 #[derive(Default, Debug, PartialEq)]
-pub struct Inventory {
+pub struct State {
     pub items: Vec<Item>,
 }
 
@@ -27,9 +27,9 @@ pub struct BulkItem {
     pub image: Option<Vec<u8>>,
 }
 
-fn inventory_update() {}
+fn update() {}
 
-fn inventory_view() {}
+fn view() {}
 
 #[cfg(test)]
 mod test {}
