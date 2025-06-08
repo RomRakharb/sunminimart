@@ -25,7 +25,7 @@ pub enum Message {
 pub mod main {
     use iced::widget::container::Style;
     use iced::widget::{Space, button, column, container, row, text};
-    use iced::{Border, Element, Length, Pixels};
+    use iced::{Border, Color, Element, Length, Pixels, color};
 
     use super::{Inventory, Message, Page, State};
 
@@ -54,14 +54,15 @@ pub mod main {
                 container(
                     button(text("คลังสินค้า").size(Pixels(30.0)))
                         .on_press(Message::MainMessage(MainMessage::GotoInventory))
-                        .padding(10)
                 )
-                .padding(10)
+                .padding(50)
                 .style(|_| Style {
                     border: Border {
+                        color: color!(0x000000),
                         width: 1.0,
                         ..Default::default()
                     },
+                    background: Some(iced::Background::Color(color!(0xFFFFCC))),
                     ..Default::default()
                 }),
                 Space::with_width(Length::Fill),
