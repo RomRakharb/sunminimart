@@ -1,5 +1,5 @@
 use iced::widget::container::Style;
-use iced::widget::{Space, button, column, container, row, text};
+use iced::widget::{button, container, text};
 use iced::{Border, Element, Length, Pixels, color};
 
 use crate::inventory;
@@ -22,28 +22,23 @@ pub fn update(state: &mut crate::State, message: crate::Message) {
 }
 
 pub fn view<'a>() -> Element<'a, crate::Message> {
-    column![
-        Space::with_height(Length::Fill),
-        row![
-            Space::with_width(Length::Fill),
-            container(
-                button(text("คลังสินค้า").size(Pixels(30.0)))
-                    .on_press(crate::Message::Home(Message::GotoInventory))
-            )
-            .padding(50)
-            .style(|_| Style {
-                border: Border {
-                    color: color!(0x000000),
-                    width: 1.0,
-                    ..Default::default()
-                },
-                background: Some(iced::Background::Color(color!(0xFFFFCC))),
+    container(
+        container(
+            button(text("คลังสินค้า").size(Pixels(30.0)))
+                .on_press(crate::Message::Home(Message::GotoInventory)),
+        )
+        .padding(50)
+        .style(|_| Style {
+            border: Border {
+                color: color!(0x000000),
+                width: 1.0,
                 ..Default::default()
-            }),
-            Space::with_width(Length::Fill),
-        ],
-        Space::with_height(Length::Fill),
-    ]
+            },
+            background: Some(iced::Background::Color(color!(0xFFFFCC))),
+            ..Default::default()
+        }),
+    )
+    .center(Length::Fill)
     .into()
 }
 
@@ -54,7 +49,7 @@ mod test {
     #[test]
     fn goto_inventory() {
         let mut state = crate::State::default();
-        update(&mut state, crate::Message::Home(Message::GotoInventory));
+        state.update(crate::Message::Home(Message::GotoInventory));
         assert_eq!(
             state.screen,
             crate::Screen::Inventory(inventory::State::default())

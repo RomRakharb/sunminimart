@@ -1,10 +1,8 @@
-[package]
-name = "sunminimart"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = [
+  "client",
+  "server",
+  "shared"
+]
 
-[dependencies]
-chrono = { version = "0.4.41", features = [ "serde" ] }
-iced = "0.13.1"
-rust_decimal = { version = "1.37.1", features = [ "serde" ] }
-serde = "1.0.219"
+resolver = "3"
