@@ -62,18 +62,19 @@
             rustToolchain
             rust-analyzer
             git
+            bacon
+            sqlx-cli
           ];
 
           # Environment variables
           env = {
             RUST_BACKTRACE = "1";
             RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
-            test = "test";
           };
 
           # A hook run every time you enter the environment
           shellHook = ''
-            echo "test"
+            source .env
           '';
 
           LD_LIBRARY_PATH = builtins.foldl' (a: b: "${a}:${b}/lib") "${pkgs.vulkan-loader}/lib" buildInputs;

@@ -4,11 +4,14 @@ use iced::widget::{
     vertical_space,
 };
 use iced::{Element, Length, Pixels};
+
+use crate::custom_widget;
 use shared::Item;
 
 #[derive(Default, Debug, PartialEq)]
 pub struct State {
     pub items: Vec<Item>,
+    pub item: Item,
     pub search: String,
 }
 
@@ -27,11 +30,7 @@ pub fn update(state: &mut crate::State, message: crate::Message) {
 
 pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
     column![
-        container(text("คลังสินค้า").size(Pixels(30.0)))
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .align_x(Horizontal::Center)
-            .align_y(Vertical::Center),
+        custom_widget::title("คลังสินค้า"),
         vertical_space(),
         row![
             horizontal_space(),
@@ -42,7 +41,7 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
                         i,
                         row![
                             text(i).width(Length::Fill).align_x(Horizontal::Center),
-                            text(format!("สินค้าราคา {} บาท", i))
+                            custom_widget::advanced_text(format!("สินค้าราคา {} บาท", i))
                                 .width(Length::Fill)
                                 .align_x(Horizontal::Center)
                         ]
@@ -51,17 +50,33 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
                 })))
                 .width(Length::Fill)
             ]
-            .width(Length::FillPortion(6)),
+            .width(Length::FillPortion(6))
+            .spacing(Pixels(10.0)),
             horizontal_space(),
             column![
-                text("text"),
-                text("text"),
-                text("text"),
-                text("text"),
-                text("text"),
-                text("text"),
+                row![
+                    text("รหัสสินค้า: ").width(Length::Fill),
+                    text_input("", &state.item.barcode).width(Length::FillPortion(4))
+                ],
+                row![
+                    custom_widget::advanced_text("ชื่อ: ").width(Length::Fill),
+                    text_input("", &state.item.name).width(Length::FillPortion(4))
+                ],
+                row![
+                    text("ต้นทุน: ").width(Length::Fill),
+                    text_input("", &state.item.cost.to_string()).width(Length::FillPortion(4))
+                ],
+                row![
+                    text("ราคา: ").width(Length::Fill),
+                    text_input("", &state.item.price.to_string()).width(Length::FillPortion(4))
+                ],
+                row![
+                    text("จำนวน: ").width(Length::Fill),
+                    text_input("", &state.item.amount.to_string()).width(Length::FillPortion(4))
+                ]
             ]
-            .width(Length::FillPortion(6)),
+            .width(Length::FillPortion(6))
+            .spacing(Pixels(10.0)),
             horizontal_space(),
         ]
         .height(Length::FillPortion(12)),
