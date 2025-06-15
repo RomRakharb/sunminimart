@@ -72,7 +72,7 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
                 ],
                 row![
                     text("จำนวน: ").width(Length::Fill),
-                    text_input("", &state.item.amount.to_string()).width(Length::FillPortion(4))
+                    text_input("", &state.item.quantity.to_string()).width(Length::FillPortion(4))
                 ]
             ]
             .width(Length::FillPortion(6))

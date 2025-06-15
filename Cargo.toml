@@ -8,5 +8,5 @@ resolver = "3"
 
 [workspace.dependencies]
 serde = { version ="1.0" }
-rust_decimal = { version = "1.37", features = [ "serde" ] }
+rust_decimal = { version = "1.37", features = [ "macros", "serde" ] }
 chrono = { version = "0.4", features = [ "serde" ] }

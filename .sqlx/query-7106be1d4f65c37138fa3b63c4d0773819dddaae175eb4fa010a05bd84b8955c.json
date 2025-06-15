@@ -1,0 +1,74 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT barcode, name, cost, price, quantity, image FROM items",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "barcode",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | PRIMARY_KEY | NO_DEFAULT_VALUE",
+          "max_size": 256
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "max_size": 256
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "cost",
+        "type_info": {
+          "type": "NewDecimal",
+          "flags": "NOT_NULL | UNSIGNED | NO_DEFAULT_VALUE",
+          "max_size": 7
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "price",
+        "type_info": {
+          "type": "NewDecimal",
+          "flags": "NOT_NULL | UNSIGNED | NO_DEFAULT_VALUE",
+          "max_size": 7
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "quantity",
+        "type_info": {
+          "type": "Short",
+          "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "max_size": 6
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "image",
+        "type_info": {
+          "type": "Blob",
+          "flags": "BLOB | BINARY",
+          "max_size": 65535
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "7106be1d4f65c37138fa3b63c4d0773819dddaae175eb4fa010a05bd84b8955c"
+}
