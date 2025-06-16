@@ -4,6 +4,8 @@ use rust_decimal::{Decimal, dec};
 use sqlx::MySqlPool;
 use tokio::sync::OnceCell;
 
+use crate::AppError;
+
 static POOL: OnceCell<MySqlPool> = OnceCell::const_new();
 
 #[derive(Debug)]
@@ -28,8 +30,9 @@ async fn pool() -> &'static MySqlPool {
     .await
 }
 
-pub(crate) async fn sync_database() -> sqlx::Result<()> {
+pub(crate) async fn sync_database() -> Result<(), AppError> {
     let pool = pool().await;
+
     let old_database_url = std::env::var("OLD_DATABASE_URL")
         .expect("OLD_DATABASE_URL not found, pleas check .env file.");
     let old_pool = MySqlPool::connect(&old_database_url).await?;
@@ -40,6 +43,7 @@ pub(crate) async fn sync_database() -> sqlx::Result<()> {
             .fetch_all(&old_pool)
             .await?;
     for item in items {
+        let mut transaction = pool.begin().await?;
         if let Ok(barcode) = item.0.parse::<i32>() {
             if barcode <= 1000 {
                 continue;
@@ -57,23 +61,27 @@ pub(crate) async fn sync_database() -> sqlx::Result<()> {
             item.3,
             item.4
         )
-        .execute(pool)
+        .execute(&mut *transaction)
         .await?;
 
-        if item.5 == "0" {
-            continue;
+        let ymd: Vec<&str> = item.5.split('-').collect();
+        if ymd.len() >= 3 {
+            if let Some(date) =
+                NaiveDate::from_ymd_opt(ymd[0].parse()?, ymd[1].parse()?, ymd[2].parse()?)
+            {
+                sqlx::query!(
+                    "
+                        INSERT INTO expire_dates (ref_barcode, expire_date)
+                        VALUES (?, ?)
+                    ",
+                    item.0,
+                    date
+                )
+                .execute(&mut *transaction)
+                .await?;
+            }
         }
-
-        // sqlx::query!(
-        //     "
-        //         INSERT INTO expire_dates (barcode, expire_date)
-        //         VALUES (?, ?)
-        //     ",
-        //     item.0,
-        //     item.5
-        // )
-        // .execute(pool)
-        // .await?;
+        transaction.commit().await?
     }
     println!("end syncing");
     Ok(())

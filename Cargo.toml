@@ -10,3 +10,4 @@ resolver = "3"
 serde = { version ="1.0" }
 rust_decimal = { version = "1.37", features = [ "macros", "serde" ] }
 chrono = { version = "0.4", features = [ "serde" ] }
+shared = { path = "./shared" }

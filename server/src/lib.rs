@@ -1,5 +1,7 @@
 mod database;
 
+use std::num::ParseIntError;
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Json},
@@ -10,7 +12,14 @@ use shared::{BulkItem, ExpireDate, Item};
 
 #[derive(Debug)]
 pub enum AppError {
+    ParseIntError(ParseIntError),
     DatabaseError(sqlx::Error),
+}
+
+impl From<ParseIntError> for AppError {
+    fn from(error: ParseIntError) -> Self {
+        AppError::ParseIntError(error)
+    }
 }
 
 impl From<sqlx::Error> for AppError {
@@ -22,6 +31,10 @@ impl From<sqlx::Error> for AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         match self {
+            Self::ParseIntError(e) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": e.to_string() })),
+            ),
             Self::DatabaseError(e) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(json!({ "error": e.to_string() })),
