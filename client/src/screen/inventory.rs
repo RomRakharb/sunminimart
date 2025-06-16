@@ -1,7 +1,6 @@
-use iced::alignment::{Horizontal, Vertical};
+use iced::alignment::Horizontal;
 use iced::widget::{
-    column, container, horizontal_space, keyed_column, row, scrollable, text, text_input,
-    vertical_space,
+    column, horizontal_space, keyed_column, row, scrollable, text, text_input, vertical_space,
 };
 use iced::{Element, Length, Pixels};
 
@@ -94,7 +93,8 @@ mod test {
     #[test]
     fn back() {
         let mut state = crate::State {
-            screen: crate::Screen::Inventory(State::default()),
+            screen: crate::Screen::Inventory(Box::default()),
+            ..Default::default()
         };
         state.update(crate::Message::Inventory(Message::Back));
         assert_eq!(state.screen, crate::Screen::Home);

@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 use dotenv::dotenv;
-use rust_decimal::{Decimal, dec};
+use rust_decimal::Decimal;
 use sqlx::MySqlPool;
 use tokio::sync::OnceCell;
 

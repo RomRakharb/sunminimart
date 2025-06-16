@@ -8,17 +8,23 @@ use screen::{home, inventory};
 #[derive(Default)]
 pub struct State {
     pub screen: Screen,
+    pub setting: Setting,
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Screen {
     Home,
-    Inventory(inventory::State),
+    Inventory(Box<inventory::State>),
+}
+
+#[derive(Default, Debug, PartialEq)]
+pub struct Setting {
+    server_ip: String,
 }
 
 impl Default for Screen {
     fn default() -> Self {
-        Screen::Inventory(inventory::State::default())
+        Screen::Inventory(Box::default())
     }
 }
 

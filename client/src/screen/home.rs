@@ -2,8 +2,6 @@ use iced::widget::container::Style;
 use iced::widget::{button, container, text};
 use iced::{Border, Element, Length, Pixels, color};
 
-use crate::inventory;
-
 #[derive(Clone, Debug)]
 pub enum Message {
     GotoInventory,
@@ -13,9 +11,7 @@ pub enum Message {
 pub fn update(state: &mut crate::State, message: crate::Message) {
     if let crate::Message::Home(message) = message {
         match message {
-            Message::GotoInventory => {
-                state.screen = crate::Screen::Inventory(inventory::State::default())
-            }
+            Message::GotoInventory => state.screen = crate::Screen::Inventory(Box::default()),
             Message::Exit => {}
         }
     }
@@ -50,9 +46,6 @@ mod test {
     fn goto_inventory() {
         let mut state = crate::State::default();
         state.update(crate::Message::Home(Message::GotoInventory));
-        assert_eq!(
-            state.screen,
-            crate::Screen::Inventory(inventory::State::default())
-        );
+        assert_eq!(state.screen, crate::Screen::Inventory(Box::default()));
     }
 }
