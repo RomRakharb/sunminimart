@@ -3,6 +3,7 @@ pub(crate) mod screen;
 
 use iced::Element;
 
+use screen::setting::State as Setting;
 use screen::{home, inventory, setting};
 
 #[derive(Default)]
@@ -17,11 +18,6 @@ pub(crate) enum Screen {
     Home,
     Inventory(Box<inventory::State>),
     Setting(setting::State),
-}
-
-#[derive(Default, Debug, PartialEq)]
-pub(crate) struct Setting {
-    server_ip: String,
 }
 
 #[derive(Clone, Debug)]
@@ -46,5 +42,38 @@ impl State {
             Screen::Inventory(state) => inventory::view(state),
             Screen::Setting(state) => setting::view(state),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::io::Write;
+
+    #[test]
+    fn default_setting() -> std::io::Result<()> {
+        let state = State::default();
+        let current_setting: Setting = state.setting;
+
+        let _ = fs::remove_file(setting::PATH);
+        let default_setting = Setting::default();
+        assert_eq!(
+            default_setting,
+            Setting {
+                server_ip: "".to_string()
+            }
+        );
+
+        let _ = (|| {
+            let json_data = serde_json::to_string_pretty(&current_setting).unwrap();
+            let mut file = fs::File::create(setting::PATH)?;
+            file.write_all(json_data.as_bytes())?;
+            Ok::<(), std::io::Error>(())
+        })();
+
+        assert_eq!(current_setting, Setting::default());
+
+        Ok(())
     }
 }

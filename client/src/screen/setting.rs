@@ -1,11 +1,43 @@
 use iced::{
-    Element, Length,
-    widget::{column, container, text_input},
+    Element, Length, Pixels,
+    widget::{button, container, horizontal_space, row, text_input},
 };
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::io::Write;
 
-#[derive(Debug, PartialEq, Default)]
+pub(crate) static PATH: &str = "./asset/setting.json";
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub(crate) struct State {
-    server_ip: String,
+    pub(crate) server_ip: String,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        let default_setting = Self {
+            server_ip: "".to_string(),
+        };
+
+        let create_file = || -> std::io::Result<()> {
+            let json_data = serde_json::to_string_pretty(&default_setting).unwrap();
+            let mut file = fs::File::create(PATH)?;
+            file.write_all(json_data.as_bytes())?;
+            Ok(())
+        };
+
+        if let Ok(data) = fs::read_to_string(PATH) {
+            if let Ok(setting) = serde_json::from_str(&data) {
+                setting
+            } else {
+                let _ = create_file;
+                default_setting
+            }
+        } else {
+            let _ = create_file;
+            default_setting
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -32,11 +64,28 @@ pub(crate) fn update(state: &mut crate::State, message: crate::Message) {
 }
 
 pub(crate) fn view<'a>(state: &State) -> Element<'a, crate::Message> {
-    container(column![text_input("", &state.server_ip).on_input(
-        |input| crate::Message::Setting(Message::OnIPChange(input))
-    )])
-    .center(Length::Fill)
+    row![
+        horizontal_space().width(Length::Fill),
+        container(
+            row![
+                text_input("", &state.server_ip)
+                    .on_input(|input| { crate::Message::Setting(Message::OnIPChange(input)) }),
+                button("บันทึก").on_press(crate::Message::Setting(Message::Submit))
+            ]
+            .spacing(Pixels(10.0)),
+        )
+        .width(Length::FillPortion(5))
+        .center(Length::Fill),
+        horizontal_space().width(Length::Fill),
+    ]
     .into()
+}
+
+fn _save_setting(setting: State) -> std::io::Result<()> {
+    let json_data = serde_json::to_string_pretty(&setting).unwrap();
+    let mut file = fs::File::create(PATH)?;
+    file.write_all(json_data.as_bytes())?;
+    Ok(())
 }
 
 #[cfg(test)]

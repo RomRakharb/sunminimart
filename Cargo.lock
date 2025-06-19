@@ -639,6 +639,7 @@ dependencies = [
  "iced",
  "rust_decimal",
  "serde",
+ "serde_json",
  "shared",
 ]
 

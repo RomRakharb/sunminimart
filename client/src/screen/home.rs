@@ -27,6 +27,7 @@ pub fn view<'a>() -> Element<'a, crate::Message> {
                 button(text("คลังสินค้า").size(Pixels(30.0)))
                     .on_press(crate::Message::Home(Message::GotoInventory)),
                 button(text("ตั้งค่า").shaping(Shaping::Advanced).size(Pixels(30.0)))
+                    .width(Length::Fill)
                     .on_press(crate::Message::Home(Message::GotoSetting)),
             ]
             .spacing(Pixels(10.0)),
