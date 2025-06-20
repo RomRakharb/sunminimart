@@ -1,7 +1,7 @@
 pub(crate) mod custom_widget;
 pub(crate) mod screen;
 
-use iced::Element;
+use iced::{Element, Subscription};
 
 use screen::setting::State as Setting;
 use screen::{home, inventory, setting};
@@ -42,6 +42,14 @@ impl State {
             Screen::Inventory(state) => inventory::view(state),
             Screen::Setting(state) => setting::view(state),
         }
+    }
+}
+
+pub fn subscription(state: &State) -> Subscription<Message> {
+    match &state.screen {
+        Screen::Home => Subscription::none(),
+        Screen::Setting(state) => setting::subscription(&state),
+        Screen::Inventory(state) => inventory::subscription(&state),
     }
 }
 

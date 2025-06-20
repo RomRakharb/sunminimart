@@ -2,7 +2,7 @@ use iced::alignment::Horizontal;
 use iced::widget::{
     column, horizontal_space, keyed_column, row, scrollable, text, text_input, vertical_space,
 };
-use iced::{Element, Length, Pixels};
+use iced::{Element, Length, Pixels, Subscription, keyboard};
 
 use crate::custom_widget;
 use shared::Item;
@@ -84,6 +84,10 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
     .height(Length::Fill)
     .width(Length::Fill)
     .into()
+}
+
+pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
+    keyboard::on_key_release(|key, modifiers| None)
 }
 
 #[cfg(test)]

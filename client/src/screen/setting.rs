@@ -1,5 +1,5 @@
 use iced::{
-    Element, Length, Pixels,
+    Element, Length, Pixels, Subscription,
     widget::{button, container, horizontal_space, row, text_input},
 };
 use serde::{Deserialize, Serialize};
@@ -79,6 +79,10 @@ pub(crate) fn view<'a>(state: &State) -> Element<'a, crate::Message> {
         horizontal_space().width(Length::Fill),
     ]
     .into()
+}
+
+pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
+    Subscription::none()
 }
 
 fn _save_setting(setting: State) -> std::io::Result<()> {
