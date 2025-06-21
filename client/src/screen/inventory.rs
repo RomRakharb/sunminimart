@@ -1,4 +1,5 @@
 use iced::alignment::Horizontal;
+use iced::keyboard::key::Named;
 use iced::widget::{
     column, horizontal_space, keyed_column, row, scrollable, text, text_input, vertical_space,
 };
@@ -87,7 +88,10 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
 }
 
 pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
-    keyboard::on_key_release(|key, modifiers| None)
+    keyboard::on_key_release(|keyboard, _| match keyboard {
+        keyboard::Key::Named(Named::Escape) => Some(crate::Message::Inventory(Message::Back)),
+        _ => None,
+    })
 }
 
 #[cfg(test)]

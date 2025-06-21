@@ -1,5 +1,6 @@
 use iced::{
     Element, Length, Pixels, Subscription,
+    keyboard::{self, key::Named},
     widget::{button, container, horizontal_space, row, text_input},
 };
 use serde::{Deserialize, Serialize};
@@ -15,35 +16,14 @@ pub(crate) struct State {
 
 impl Default for State {
     fn default() -> Self {
-        let default_setting = Self {
-            server_ip: "".to_string(),
-        };
-
-        let create_file = || -> std::io::Result<()> {
-            let json_data = serde_json::to_string_pretty(&default_setting).unwrap();
-            let mut file = fs::File::create(PATH)?;
-            file.write_all(json_data.as_bytes())?;
-            Ok(())
-        };
-
-        if let Ok(data) = fs::read_to_string(PATH) {
-            if let Ok(setting) = serde_json::from_str(&data) {
-                setting
-            } else {
-                let _ = create_file;
-                default_setting
-            }
-        } else {
-            let _ = create_file;
-            default_setting
-        }
+        read()
     }
 }
 
 #[derive(Clone, Debug)]
 pub enum Message {
     OnIPChange(String),
-    Submit,
+    Connect,
     Back,
 }
 
@@ -53,9 +33,12 @@ pub(crate) fn update(state: &mut crate::State, message: crate::Message) {
             Message::OnIPChange(ip) => {
                 state.screen = crate::Screen::Setting(State { server_ip: ip })
             }
-            Message::Submit => {
-                if let crate::Screen::Setting(State { server_ip }) = &state.screen {
-                    state.setting.server_ip = server_ip.to_string();
+            Message::Connect => {
+                if let crate::Screen::Setting(setting) = &state.screen {
+                    state.setting.server_ip = setting.server_ip.clone();
+                    let _ = save(setting);
+                } else {
+                    panic!("update, Message::Submit");
                 }
             }
             Message::Back => state.screen = crate::Screen::Home,
@@ -70,7 +53,7 @@ pub(crate) fn view<'a>(state: &State) -> Element<'a, crate::Message> {
             row![
                 text_input("", &state.server_ip)
                     .on_input(|input| { crate::Message::Setting(Message::OnIPChange(input)) }),
-                button("บันทึก").on_press(crate::Message::Setting(Message::Submit))
+                button("บันทึก").on_press(crate::Message::Setting(Message::Connect))
             ]
             .spacing(Pixels(10.0)),
         )
@@ -82,10 +65,31 @@ pub(crate) fn view<'a>(state: &State) -> Element<'a, crate::Message> {
 }
 
 pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
-    Subscription::none()
+    keyboard::on_key_release(|keyboard, _| match keyboard {
+        keyboard::Key::Named(Named::Escape) => Some(crate::Message::Setting(Message::Back)),
+        _ => None,
+    })
 }
 
-fn _save_setting(setting: State) -> std::io::Result<()> {
+fn read() -> State {
+    let default_setting = State {
+        server_ip: "".to_string(),
+    };
+
+    if let Ok(data) = fs::read_to_string(PATH) {
+        if let Ok(setting) = serde_json::from_str(&data) {
+            setting
+        } else {
+            let _ = save(&default_setting);
+            default_setting
+        }
+    } else {
+        let _ = save(&default_setting);
+        default_setting
+    }
+}
+
+fn save(setting: &State) -> std::io::Result<()> {
     let json_data = serde_json::to_string_pretty(&setting).unwrap();
     let mut file = fs::File::create(PATH)?;
     file.write_all(json_data.as_bytes())?;
@@ -115,13 +119,17 @@ mod test {
         let ip = "192.168.1.45:3000".to_string();
 
         let mut state = init_state();
+        let original_ip = read();
+
         state.update(crate::Message::Setting(Message::OnIPChange(ip.clone())));
         if let crate::Screen::Setting(state) = &state.screen {
             assert_eq!(state.server_ip, ip);
         } else {
-            panic!("Screen suppose to be Setting");
+            panic!("test: change_ip");
         }
-        state.update(crate::Message::Setting(Message::Submit));
+
+        state.update(crate::Message::Setting(Message::Connect));
         assert_eq!(state.setting.server_ip, ip);
+        let _ = save(&original_ip);
     }
 }
