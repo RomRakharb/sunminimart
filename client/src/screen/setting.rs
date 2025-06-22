@@ -38,7 +38,7 @@ pub(crate) fn update(state: &mut crate::State, message: crate::Message) {
                     state.setting.server_ip = setting.server_ip.clone();
                     let _ = save(setting);
                 } else {
-                    panic!("update, Message::Submit");
+                    panic!("panic at screens::setting::update, Message::Submit");
                 }
             }
             Message::Back => state.screen = crate::Screen::Home,
@@ -71,22 +71,18 @@ pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
     })
 }
 
-fn read() -> State {
-    let default_setting = State {
+pub(crate) fn read() -> State {
+    let mut default_setting = State {
         server_ip: "".to_string(),
     };
 
     if let Ok(data) = fs::read_to_string(PATH) {
         if let Ok(setting) = serde_json::from_str(&data) {
-            setting
-        } else {
-            let _ = save(&default_setting);
-            default_setting
+            default_setting = setting
         }
-    } else {
-        let _ = save(&default_setting);
-        default_setting
     }
+
+    default_setting
 }
 
 fn save(setting: &State) -> std::io::Result<()> {
@@ -117,9 +113,9 @@ mod test {
     #[test]
     fn change_ip() {
         let ip = "192.168.1.45:3000".to_string();
+        let original_ip = read();
 
         let mut state = init_state();
-        let original_ip = read();
 
         state.update(crate::Message::Setting(Message::OnIPChange(ip.clone())));
         if let crate::Screen::Setting(state) = &state.screen {
@@ -130,6 +126,7 @@ mod test {
 
         state.update(crate::Message::Setting(Message::Connect));
         assert_eq!(state.setting.server_ip, ip);
+
         let _ = save(&original_ip);
     }
 }

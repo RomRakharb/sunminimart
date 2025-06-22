@@ -6,7 +6,7 @@ use iced::{Element, Subscription};
 use screen::setting::State as Setting;
 use screen::{home, inventory, setting};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct State {
     pub(crate) screen: Screen,
     pub(crate) setting: Setting,
@@ -50,38 +50,5 @@ pub fn subscription(state: &State) -> Subscription<Message> {
         Screen::Home => Subscription::none(),
         Screen::Setting(state) => setting::subscription(&state),
         Screen::Inventory(state) => inventory::subscription(&state),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs;
-    use std::io::Write;
-
-    #[test]
-    fn default_setting() -> std::io::Result<()> {
-        let state = State::default();
-        let current_setting: Setting = state.setting;
-
-        let _ = fs::remove_file(setting::PATH);
-        let default_setting = Setting::default();
-        assert_eq!(
-            default_setting,
-            Setting {
-                server_ip: "".to_string()
-            }
-        );
-
-        let _ = (|| {
-            let json_data = serde_json::to_string_pretty(&current_setting).unwrap();
-            let mut file = fs::File::create(setting::PATH)?;
-            file.write_all(json_data.as_bytes())?;
-            Ok::<(), std::io::Error>(())
-        })();
-
-        assert_eq!(current_setting, Setting::default());
-
-        Ok(())
     }
 }

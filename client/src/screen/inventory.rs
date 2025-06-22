@@ -4,8 +4,10 @@ use iced::widget::{
     column, horizontal_space, keyed_column, row, scrollable, text, text_input, vertical_space,
 };
 use iced::{Element, Length, Pixels, Subscription, keyboard};
+use reqwest;
 
 use crate::custom_widget;
+use crate::screen::setting;
 use shared::Item;
 
 #[derive(Default, Debug, PartialEq)]
@@ -18,12 +20,14 @@ pub struct State {
 #[derive(Debug, Clone)]
 pub enum Message {
     Back,
+    Refresh,
 }
 
 pub fn update(state: &mut crate::State, message: crate::Message) {
     if let crate::Message::Inventory(message) = message {
         match message {
             Message::Back => state.screen = crate::Screen::Home,
+            Message::Refresh => {}
         }
     }
 }
@@ -98,13 +102,33 @@ pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
 mod test {
     use super::*;
 
-    #[test]
-    fn back() {
-        let mut state = crate::State {
+    fn init_state() -> crate::State {
+        crate::State {
             screen: crate::Screen::Inventory(Box::default()),
             ..Default::default()
-        };
+        }
+    }
+
+    #[test]
+    fn back() {
+        let mut state = init_state();
         state.update(crate::Message::Inventory(Message::Back));
         assert_eq!(state.screen, crate::Screen::Home);
+    }
+
+    #[test]
+    fn refresh() {
+        let mut state = init_state();
+        if let crate::Screen::Inventory(state) = &state.screen {
+            assert!(state.items.is_empty());
+        } else {
+            panic!();
+        }
+        state.update(crate::Message::Inventory(Message::Refresh));
+        if let crate::Screen::Inventory(state) = state.screen {
+            assert!(!state.items.is_empty());
+        } else {
+            panic!();
+        }
     }
 }

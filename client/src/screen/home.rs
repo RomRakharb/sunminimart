@@ -1,7 +1,7 @@
 use iced::widget::container::Style;
 use iced::widget::text::Shaping;
-use iced::widget::{button, column, container, text};
-use iced::{Border, Element, Length, Pixels, color};
+use iced::widget::{button, column, container, horizontal_space, row, text};
+use iced::{Alignment, Border, Element, Length, Pixels, color};
 
 use crate::screen::setting;
 
@@ -21,17 +21,30 @@ pub fn update(state: &mut crate::State, message: crate::Message) {
 }
 
 pub fn view<'a>() -> Element<'a, crate::Message> {
-    container(
-        container(
+    container(row![
+        horizontal_space().width(Length::Fill),
+        container(row![
             column![
-                button(text("คลังสินค้า").size(Pixels(30.0)))
-                    .on_press(crate::Message::Home(Message::GotoInventory)),
-                button(text("ตั้งค่า").shaping(Shaping::Advanced).size(Pixels(30.0)))
-                    .width(Length::Fill)
-                    .on_press(crate::Message::Home(Message::GotoSetting)),
+                button(
+                    text("คลังสินค้า")
+                        .size(Pixels(30.0))
+                        .width(Length::Fill)
+                        .align_x(Alignment::Center)
+                )
+                .padding(20)
+                .on_press(crate::Message::Home(Message::GotoInventory)),
+                button(
+                    text("ตั้งค่า")
+                        .shaping(Shaping::Advanced)
+                        .size(Pixels(30.0))
+                        .width(Length::Fill)
+                        .align_x(Alignment::Center)
+                )
+                .padding(20)
+                .on_press(crate::Message::Home(Message::GotoSetting)),
             ]
-            .spacing(Pixels(10.0)),
-        )
+            .spacing(Pixels(20.0)),
+        ])
         .padding(50)
         .style(|_| Style {
             border: Border {
@@ -39,10 +52,11 @@ pub fn view<'a>() -> Element<'a, crate::Message> {
                 width: 1.0,
                 ..Default::default()
             },
-            background: Some(iced::Background::Color(color!(0xFFFFCC))),
             ..Default::default()
-        }),
-    )
+        })
+        .width(Length::Fill),
+        horizontal_space().width(Length::Fill),
+    ])
     .center(Length::Fill)
     .into()
 }
