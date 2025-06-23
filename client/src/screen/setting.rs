@@ -11,7 +11,7 @@ pub(crate) static PATH: &str = "./asset/setting.json";
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub(crate) struct State {
-    pub(crate) server_ip: String,
+    pub(crate) url: String,
 }
 
 impl Default for State {
@@ -30,12 +30,10 @@ pub enum Message {
 pub(crate) fn update(state: &mut crate::State, message: crate::Message) {
     if let crate::Message::Setting(message) = message {
         match message {
-            Message::OnIPChange(ip) => {
-                state.screen = crate::Screen::Setting(State { server_ip: ip })
-            }
+            Message::OnIPChange(ip) => state.screen = crate::Screen::Setting(State { url: ip }),
             Message::Connect => {
                 if let crate::Screen::Setting(setting) = &state.screen {
-                    state.setting.server_ip = setting.server_ip.clone();
+                    state.setting.url = setting.url.clone();
                     let _ = save(setting);
                 } else {
                     panic!("panic at screens::setting::update, Message::Submit");
@@ -51,7 +49,7 @@ pub(crate) fn view<'a>(state: &State) -> Element<'a, crate::Message> {
         horizontal_space().width(Length::Fill),
         container(
             row![
-                text_input("", &state.server_ip)
+                text_input("", &state.url)
                     .on_input(|input| { crate::Message::Setting(Message::OnIPChange(input)) }),
                 button("บันทึก").on_press(crate::Message::Setting(Message::Connect))
             ]
@@ -73,7 +71,7 @@ pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
 
 pub(crate) fn read() -> State {
     let mut default_setting = State {
-        server_ip: "".to_string(),
+        url: "".to_string(),
     };
 
     if let Ok(data) = fs::read_to_string(PATH) {
@@ -119,13 +117,13 @@ mod test {
 
         state.update(crate::Message::Setting(Message::OnIPChange(ip.clone())));
         if let crate::Screen::Setting(state) = &state.screen {
-            assert_eq!(state.server_ip, ip);
+            assert_eq!(state.url, ip);
         } else {
             panic!("test: change_ip");
         }
 
         state.update(crate::Message::Setting(Message::Connect));
-        assert_eq!(state.setting.server_ip, ip);
+        assert_eq!(state.setting.url, ip);
 
         let _ = save(&original_ip);
     }

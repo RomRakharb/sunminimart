@@ -1,7 +1,7 @@
 pub(crate) mod custom_widget;
 pub(crate) mod screen;
 
-use iced::{Element, Subscription};
+use iced::{Element, Subscription, Task};
 
 use screen::setting::State as Setting;
 use screen::{home, inventory, setting};
@@ -16,7 +16,7 @@ pub struct State {
 pub(crate) enum Screen {
     #[default]
     Home,
-    Inventory(Box<inventory::State>),
+    Inventory(inventory::State),
     Setting(setting::State),
 }
 
@@ -28,11 +28,14 @@ pub enum Message {
 }
 
 impl State {
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) -> Task<Message> {
         match self.screen {
             Screen::Home => home::update(self, message),
             Screen::Inventory(_) => inventory::update(self, message),
-            Screen::Setting(_) => setting::update(self, message),
+            Screen::Setting(_) => {
+                setting::update(self, message);
+                Task::none()
+            }
         }
     }
 

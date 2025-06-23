@@ -1,9 +1,10 @@
 use iced::widget::container::Style;
 use iced::widget::text::Shaping;
 use iced::widget::{button, column, container, horizontal_space, row, text};
-use iced::{Alignment, Border, Element, Length, Pixels, color};
+use iced::{Alignment, Border, Element, Length, Pixels, Task, color};
 
-use crate::screen::setting;
+// use crate::screen::{inventory, setting};
+use super::{inventory, setting};
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -11,12 +12,22 @@ pub enum Message {
     GotoSetting,
 }
 
-pub fn update(state: &mut crate::State, message: crate::Message) {
+pub fn update(state: &mut crate::State, message: crate::Message) -> Task<crate::Message> {
     if let crate::Message::Home(message) = message {
-        state.screen = match message {
-            Message::GotoInventory => crate::Screen::Inventory(Box::default()),
-            Message::GotoSetting => crate::Screen::Setting(setting::State::default()),
-        };
+        match message {
+            Message::GotoInventory => {
+                state.screen = crate::Screen::Inventory(inventory::State::default());
+                Task::perform(inventory::fetch_items(state.setting.url.clone()), |items| {
+                    crate::Message::Inventory(inventory::Message::ItemsFetched(items))
+                })
+            }
+            Message::GotoSetting => {
+                state.screen = crate::Screen::Setting(setting::State::default());
+                Task::none()
+            }
+        }
+    } else {
+        Task::none()
     }
 }
 
@@ -73,7 +84,10 @@ mod test {
     fn goto_inventory() {
         let mut state = init_state();
         state.update(crate::Message::Home(Message::GotoInventory));
-        assert_eq!(state.screen, crate::Screen::Inventory(Box::default()));
+        assert_eq!(
+            state.screen,
+            crate::Screen::Inventory(inventory::State::default())
+        );
     }
 
     #[test]
