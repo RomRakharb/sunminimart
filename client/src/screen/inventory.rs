@@ -22,6 +22,7 @@ pub struct State {
 #[derive(Debug, Clone)]
 pub enum Message {
     Back,
+    OnSearchChange(String),
     Refresh,
     FetchItems,
     ItemsFetched(Vec<shared::Item>),
@@ -34,13 +35,35 @@ pub fn update(state: &mut crate::State, message: crate::Message) -> Task<crate::
                 state.screen = crate::Screen::Home;
                 Task::none()
             }
-            Message::Refresh => Task::none(),
+            Message::OnSearchChange(search) => {
+                if let crate::Screen::Inventory(state) = &mut state.screen {
+                    state.search = search.clone();
+                    state.filtered_items = state
+                        .all_items
+                        .clone()
+                        .into_iter()
+                        .filter(|item| {
+                            item.barcode.contains(&search) || item.name.contains(&search)
+                        })
+                        .collect();
+                }
+                Task::none()
+            }
+            Message::Refresh => {
+                if let crate::Screen::Inventory(state) = &mut state.screen {
+                    state.filtered_items = state.all_items.clone();
+                    state.current_item = Item::default();
+                    state.search = String::new();
+                }
+                Task::none()
+            }
             Message::FetchItems => Task::perform(fetch_items(state.setting.url.clone()), |items| {
                 crate::Message::Inventory(Message::ItemsFetched(items))
             }),
             Message::ItemsFetched(items) => {
                 if let crate::Screen::Inventory(state) = &mut state.screen {
-                    state.all_items = items;
+                    state.all_items = items.clone();
+                    state.filtered_items = items;
                 }
                 Task::none()
             }
@@ -74,10 +97,12 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
             column![
                 row![
                     text("ค้นหา: "),
-                    text_input("", &state.search),
-                    button("fetch").on_press(crate::Message::Inventory(Message::FetchItems))
+                    text_input("", &state.search).on_input(|input| {
+                        crate::Message::Inventory(Message::OnSearchChange(input))
+                    }),
+                    button("refresh").on_press(crate::Message::Inventory(Message::Refresh))
                 ],
-                scrollable(keyed_column(state.all_items.iter().enumerate().map(
+                scrollable(keyed_column(state.filtered_items.iter().enumerate().map(
                     |(i, item)| {
                         (
                             i,
@@ -150,7 +175,7 @@ mod test {
 
     fn init_state() -> crate::State {
         crate::State {
-            screen: crate::Screen::Inventory(State::default()),
+            screen: crate::Screen::Inventory(Box::default()),
             ..Default::default()
         }
     }
@@ -162,12 +187,13 @@ mod test {
         assert_eq!(state.screen, crate::Screen::Home);
     }
 
-    #[test]
-    fn fetch_items() {
-        let mut state = init_state();
-        let _ = state.update(crate::Message::Inventory(Message::FetchItems));
-        if let crate::Screen::Inventory(state) = state.screen {}
-    }
+    // #[test]
+    // fn fetch_items() {
+    //     let mut state = init_state();
+    //     let task: Task<crate::Message> =
+    //         state.update(crate::Message::Inventory(Message::FetchItems));
+    //     assert_ne!(task, Task::none());
+    // }
 
     #[test]
     fn items_fetched() {
@@ -196,8 +222,81 @@ mod test {
     }
 
     #[test]
+    fn on_search_changed() {
+        let item_0 = shared::Item {
+            barcode: "0".to_string(),
+            name: "a".to_string(),
+            ..Default::default()
+        };
+        let item_1 = shared::Item {
+            barcode: "1".to_string(),
+            name: "a".to_string(),
+            ..Default::default()
+        };
+        let item_2 = shared::Item {
+            barcode: "2".to_string(),
+            name: "b".to_string(),
+            ..Default::default()
+        };
+        let items = vec![item_0.clone(), item_1.clone(), item_2.clone()];
+
+        let mut state = init_state();
+        let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
+        if let crate::Screen::Inventory(ref state) = state.screen {
+            assert_eq!(state.all_items, state.filtered_items);
+        }
+
+        let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
+            "1".to_string(),
+        )));
+        if let crate::Screen::Inventory(ref state) = state.screen {
+            assert_eq!(state.filtered_items, vec![item_1.clone()]);
+        }
+
+        let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
+            "a".to_string(),
+        )));
+        if let crate::Screen::Inventory(ref state) = state.screen {
+            assert_eq!(state.filtered_items, vec![item_0, item_1]);
+        }
+
+        let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
+            "b".to_string(),
+        )));
+        if let crate::Screen::Inventory(state) = state.screen {
+            assert_eq!(state.filtered_items, vec![item_2]);
+        }
+    }
+
+    #[test]
     fn refresh() {
         let mut state = init_state();
+        let items = vec![
+            shared::Item {
+                barcode: "0".to_string(),
+                ..Default::default()
+            },
+            shared::Item {
+                barcode: "1".to_string(),
+                ..Default::default()
+            },
+            shared::Item {
+                barcode: "2".to_string(),
+                ..Default::default()
+            },
+        ];
+        let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
+
+        if let crate::Screen::Inventory(ref mut state) = state.screen {
+            state.current_item = Item {
+                barcode: "test".to_string(),
+                name: "test".to_string(),
+                cost: rust_decimal::dec!(5.6),
+                price: rust_decimal::dec!(8.2),
+                quantity: 34,
+                ..Default::default()
+            };
+        }
         let _ = state.update(crate::Message::Inventory(Message::Refresh));
         if let crate::Screen::Inventory(state) = state.screen {
             assert_eq!(state.all_items, state.filtered_items);

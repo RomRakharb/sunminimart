@@ -16,7 +16,7 @@ pub struct State {
 pub(crate) enum Screen {
     #[default]
     Home,
-    Inventory(inventory::State),
+    Inventory(Box<inventory::State>),
     Setting(setting::State),
 }
 
@@ -51,7 +51,7 @@ impl State {
 pub fn subscription(state: &State) -> Subscription<Message> {
     match &state.screen {
         Screen::Home => Subscription::none(),
-        Screen::Setting(state) => setting::subscription(&state),
-        Screen::Inventory(state) => inventory::subscription(&state),
+        Screen::Setting(state) => setting::subscription(state),
+        Screen::Inventory(state) => inventory::subscription(state),
     }
 }

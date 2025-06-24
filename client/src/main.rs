@@ -2,7 +2,7 @@ use client::{State, subscription};
 use iced::Font;
 
 fn main() -> iced::Result {
-    iced::application(|| State::default(), State::update, State::view)
+    iced::application(State::default, State::update, State::view)
         .title("Sunminimart")
         .theme(|_| iced::Theme::Light)
         .centered()

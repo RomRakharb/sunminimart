@@ -16,7 +16,7 @@ pub fn update(state: &mut crate::State, message: crate::Message) -> Task<crate::
     if let crate::Message::Home(message) = message {
         match message {
             Message::GotoInventory => {
-                state.screen = crate::Screen::Inventory(inventory::State::default());
+                state.screen = crate::Screen::Inventory(Box::default());
                 Task::perform(inventory::fetch_items(state.setting.url.clone()), |items| {
                     crate::Message::Inventory(inventory::Message::ItemsFetched(items))
                 })
@@ -83,17 +83,14 @@ mod test {
     #[test]
     fn goto_inventory() {
         let mut state = init_state();
-        state.update(crate::Message::Home(Message::GotoInventory));
-        assert_eq!(
-            state.screen,
-            crate::Screen::Inventory(inventory::State::default())
-        );
+        let _ = state.update(crate::Message::Home(Message::GotoInventory));
+        assert_eq!(state.screen, crate::Screen::Inventory(Box::default()));
     }
 
     #[test]
     fn goto_setting() {
         let mut state = init_state();
-        state.update(crate::Message::Home(Message::GotoSetting));
+        let _ = state.update(crate::Message::Home(Message::GotoSetting));
         assert_eq!(
             state.screen,
             crate::Screen::Setting(setting::State::default())

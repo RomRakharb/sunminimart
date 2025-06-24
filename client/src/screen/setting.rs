@@ -104,7 +104,7 @@ mod test {
     #[test]
     fn back() {
         let mut state = init_state();
-        state.update(crate::Message::Setting(Message::Back));
+        let _ = state.update(crate::Message::Setting(Message::Back));
         assert_eq!(state.screen, crate::Screen::Home);
     }
 
@@ -115,14 +115,14 @@ mod test {
 
         let mut state = init_state();
 
-        state.update(crate::Message::Setting(Message::OnIPChange(ip.clone())));
+        let _ = state.update(crate::Message::Setting(Message::OnIPChange(ip.clone())));
         if let crate::Screen::Setting(state) = &state.screen {
             assert_eq!(state.url, ip);
         } else {
             panic!("test: change_ip");
         }
 
-        state.update(crate::Message::Setting(Message::Connect));
+        let _ = state.update(crate::Message::Setting(Message::Connect));
         assert_eq!(state.setting.url, ip);
 
         let _ = save(&original_ip);
