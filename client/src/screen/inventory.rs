@@ -1,10 +1,10 @@
 use iced::alignment::Horizontal;
 use iced::keyboard::key::Named;
 use iced::widget::{
-    button, column, horizontal_space, keyed_column, row, scrollable, text, text_input,
+    button, column, container, horizontal_space, keyed_column, row, scrollable, text, text_input,
     vertical_space,
 };
-use iced::{Element, Length, Pixels, Subscription, Task, keyboard};
+use iced::{Color, Element, Length, Pixels, Subscription, Task, color, keyboard};
 use reqwest;
 use serde_json;
 
@@ -17,6 +17,13 @@ pub struct State {
     pub filtered_items: Vec<Item>,
     pub current_item: Item,
     pub search: String,
+    pub position: usize,
+}
+
+#[derive(Debug, Clone)]
+enum Action {
+    Up,
+    Down,
 }
 
 #[derive(Debug, Clone)]
@@ -26,6 +33,7 @@ pub enum Message {
     Refresh,
     FetchItems,
     ItemsFetched(Vec<shared::Item>),
+    OnPositionChange(Action),
 }
 
 pub fn update(state: &mut crate::State, message: crate::Message) -> Task<crate::Message> {
@@ -38,6 +46,7 @@ pub fn update(state: &mut crate::State, message: crate::Message) -> Task<crate::
             Message::OnSearchChange(search) => {
                 if let crate::Screen::Inventory(state) = &mut state.screen {
                     state.search = search.clone();
+                    state.position = 0;
                     state.filtered_items = state
                         .all_items
                         .clone()
@@ -67,6 +76,23 @@ pub fn update(state: &mut crate::State, message: crate::Message) -> Task<crate::
                 }
                 Task::none()
             }
+            Message::OnPositionChange(action) => {
+                if let crate::Screen::Inventory(state) = &mut state.screen {
+                    match action {
+                        Action::Up => {
+                            if state.position < state.filtered_items.len() - 1 {
+                                state.position += 1
+                            }
+                        }
+                        Action::Down => {
+                            if state.position > 0 {
+                                state.position -= 1
+                            }
+                        }
+                    }
+                }
+                Task::none()
+            }
         }
     } else {
         Task::none()
@@ -88,7 +114,7 @@ pub(super) async fn fetch_items(url: String) -> Vec<Item> {
     output_items
 }
 
-pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
+pub fn view<'a>(state: &'a State) -> Element<'a, crate::Message> {
     column![
         custom_widget::title("คลังสินค้า"),
         vertical_space(),
@@ -97,23 +123,37 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
             column![
                 row![
                     text("ค้นหา: "),
-                    text_input("", &state.search).on_input(|input| {
-                        crate::Message::Inventory(Message::OnSearchChange(input))
-                    }),
+                    text_input("", &state.search)
+                        .id("search")
+                        .on_input(|input| {
+                            crate::Message::Inventory(Message::OnSearchChange(input))
+                        }),
                     button("refresh").on_press(crate::Message::Inventory(Message::Refresh))
                 ],
                 scrollable(keyed_column(state.filtered_items.iter().enumerate().map(
                     |(i, item)| {
                         (
                             i,
-                            row![
+                            container(row![
                                 text(item.barcode.clone())
                                     .width(Length::Fill)
                                     .align_x(Horizontal::Center),
-                                custom_widget::advanced_text(item.name.clone())
+                                text(item.name.clone())
+                                    .shaping(text::Shaping::Advanced)
                                     .width(Length::Fill)
                                     .align_x(Horizontal::Center)
-                            ]
+                            ])
+                            .style(move |_| {
+                                if i == state.position {
+                                    container::Style {
+                                        background: Some(iced::Background::Color(color!(0x4169e1))),
+                                        text_color: Some(Color::WHITE),
+                                        ..Default::default()
+                                    }
+                                } else {
+                                    container::Style::default()
+                                }
+                            })
                             .into(),
                         )
                     }
@@ -129,7 +169,9 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
                     text_input("", &state.current_item.barcode).width(Length::FillPortion(4))
                 ],
                 row![
-                    custom_widget::advanced_text("ชื่อ: ").width(Length::Fill),
+                    text("ชื่อ: ")
+                        .shaping(text::Shaping::Advanced)
+                        .width(Length::Fill),
                     text_input("", &state.current_item.name).width(Length::FillPortion(4))
                 ],
                 row![
@@ -161,8 +203,14 @@ pub fn view<'a>(state: &State) -> Element<'a, crate::Message> {
 }
 
 pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
-    keyboard::on_key_release(|keyboard, _| match keyboard {
+    keyboard::on_key_press(|keyboard, _| match keyboard {
         keyboard::Key::Named(Named::Escape) => Some(crate::Message::Inventory(Message::Back)),
+        keyboard::Key::Named(Named::ArrowDown) => Some(crate::Message::Inventory(
+            Message::OnPositionChange(Action::Up),
+        )),
+        keyboard::Key::Named(Named::ArrowUp) => Some(crate::Message::Inventory(
+            Message::OnPositionChange(Action::Down),
+        )),
         _ => None,
     })
 }
@@ -187,6 +235,7 @@ mod test {
         assert_eq!(state.screen, crate::Screen::Home);
     }
 
+    // TODO find a way to test Task
     // #[test]
     // fn fetch_items() {
     //     let mut state = init_state();
@@ -222,7 +271,7 @@ mod test {
     }
 
     #[test]
-    fn on_search_changed() {
+    fn on_search_change() {
         let item_0 = shared::Item {
             barcode: "0".to_string(),
             name: "a".to_string(),
@@ -242,8 +291,12 @@ mod test {
 
         let mut state = init_state();
         let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
+        let _ = state.update(crate::Message::Inventory(Message::OnPositionChange(
+            Action::Up,
+        )));
         if let crate::Screen::Inventory(ref state) = state.screen {
             assert_eq!(state.all_items, state.filtered_items);
+            assert_eq!(state.position, 1);
         }
 
         let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
@@ -251,6 +304,7 @@ mod test {
         )));
         if let crate::Screen::Inventory(ref state) = state.screen {
             assert_eq!(state.filtered_items, vec![item_1.clone()]);
+            assert_eq!(state.position, 0);
         }
 
         let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
@@ -310,6 +364,56 @@ mod test {
             assert!(state.current_item.bulk_item.is_empty());
         } else {
             panic!();
+        }
+    }
+
+    #[test]
+    fn on_position_change() {
+        let mut state = init_state();
+        let items = vec![
+            shared::Item {
+                barcode: "0".to_string(),
+                ..Default::default()
+            },
+            shared::Item {
+                barcode: "1".to_string(),
+                ..Default::default()
+            },
+            shared::Item {
+                barcode: "2".to_string(),
+                ..Default::default()
+            },
+        ];
+        let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
+        if let crate::Screen::Inventory(ref state) = state.screen {
+            assert_eq!(state.position, 0);
+        }
+
+        let _ = state.update(crate::Message::Inventory(Message::OnPositionChange(
+            Action::Up,
+        )));
+        if let crate::Screen::Inventory(ref state) = state.screen {
+            assert_eq!(state.position, 1);
+        }
+
+        let _ = state.update(crate::Message::Inventory(Message::OnPositionChange(
+            Action::Down,
+        )));
+        if let crate::Screen::Inventory(ref state) = state.screen {
+            assert_eq!(state.position, 0);
+        }
+
+        let _ = state.update(crate::Message::Inventory(Message::OnPositionChange(
+            Action::Up,
+        )));
+        let _ = state.update(crate::Message::Inventory(Message::OnPositionChange(
+            Action::Up,
+        )));
+        let _ = state.update(crate::Message::Inventory(Message::OnPositionChange(
+            Action::Up,
+        )));
+        if let crate::Screen::Inventory(state) = state.screen {
+            assert_eq!(state.position, 2);
         }
     }
 }

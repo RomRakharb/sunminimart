@@ -1,11 +1,11 @@
 use crate::Message;
 use iced::alignment::{Horizontal, Vertical};
-use iced::widget::{Container, Text, container, text};
-use iced::{Length, Pixels};
+use iced::widget::{
+    Container, Text, button, column, container, keyed_column, row, scrollable, text, text_input,
+};
+use iced::{Element, Length, Pixels};
 
-pub(crate) fn advanced_text<'a>(value: impl text::IntoFragment<'a>) -> Text<'a> {
-    iced::widget::text(value).shaping(text::Shaping::Advanced)
-}
+use shared::Item;
 
 pub(crate) fn title<'a>(value: impl text::IntoFragment<'a>) -> Container<'a, Message> {
     container(text(value).size(Pixels(30.0)))
