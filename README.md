@@ -15,4 +15,3 @@
 
 2. get tools
   - sqlx-cli
-  - bacon
