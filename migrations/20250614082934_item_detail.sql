@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS bulk_items (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     barcode VARCHAR(64) UNIQUE,
     ref_barcode VARCHAR(64) NOT NULL,
-    name VARCHAR(64),
+    name VARCHAR(64) NOT NULL,
     price DECIMAL(6, 2) UNSIGNED NOT NULL,
     quantity SMALLINT NOT NULL,
     image BLOB,

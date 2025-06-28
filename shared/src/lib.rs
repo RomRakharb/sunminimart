@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct Item {
     pub barcode: String,
     pub name: String,
@@ -14,16 +14,16 @@ pub struct Item {
     pub bulk_item: Vec<BulkItem>,
 }
 
-#[derive(Default, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct BulkItem {
     pub barcode: Option<String>,
-    pub name: Option<String>,
+    pub name: String,
     pub price: Decimal,
     pub quantity: i32,
     pub image: Option<Vec<u8>>,
 }
 
-#[derive(Default, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct ExpireDate {
     pub expire_date: NaiveDate,
 }

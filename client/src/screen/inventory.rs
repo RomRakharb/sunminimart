@@ -21,7 +21,7 @@ pub struct State {
 }
 
 #[derive(Debug, Clone)]
-enum Action {
+pub(crate) enum Action {
     Up,
     Down,
 }
@@ -32,7 +32,7 @@ pub enum Message {
     OnSearchChange(String),
     Refresh,
     FetchItems,
-    ItemsFetched(Vec<shared::Item>),
+    ItemsFetched(Vec<Item>),
     OnPositionChange(Action),
 }
 
@@ -228,6 +228,23 @@ mod test {
         }
     }
 
+    fn sample_items() -> Vec<Item> {
+        vec![
+            shared::Item {
+                barcode: "0".to_string(),
+                ..Default::default()
+            },
+            shared::Item {
+                barcode: "1".to_string(),
+                ..Default::default()
+            },
+            shared::Item {
+                barcode: "2".to_string(),
+                ..Default::default()
+            },
+        ]
+    }
+
     #[test]
     fn back() {
         let mut state = init_state();
@@ -246,20 +263,7 @@ mod test {
 
     #[test]
     fn items_fetched() {
-        let items = vec![
-            shared::Item {
-                barcode: "0".to_string(),
-                ..Default::default()
-            },
-            shared::Item {
-                barcode: "1".to_string(),
-                ..Default::default()
-            },
-            shared::Item {
-                barcode: "2".to_string(),
-                ..Default::default()
-            },
-        ];
+        let items = sample_items();
         let mut state = init_state();
         let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
         if let crate::Screen::Inventory(state) = state.screen {
@@ -272,25 +276,10 @@ mod test {
 
     #[test]
     fn on_search_change() {
-        let item_0 = shared::Item {
-            barcode: "0".to_string(),
-            name: "a".to_string(),
-            ..Default::default()
-        };
-        let item_1 = shared::Item {
-            barcode: "1".to_string(),
-            name: "a".to_string(),
-            ..Default::default()
-        };
-        let item_2 = shared::Item {
-            barcode: "2".to_string(),
-            name: "b".to_string(),
-            ..Default::default()
-        };
-        let items = vec![item_0.clone(), item_1.clone(), item_2.clone()];
+        let items = sample_items();
 
         let mut state = init_state();
-        let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
+        let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items.clone())));
         let _ = state.update(crate::Message::Inventory(Message::OnPositionChange(
             Action::Up,
         )));
@@ -303,7 +292,7 @@ mod test {
             "1".to_string(),
         )));
         if let crate::Screen::Inventory(ref state) = state.screen {
-            assert_eq!(state.filtered_items, vec![item_1.clone()]);
+            assert_eq!(state.filtered_items, vec![items[1].clone()]);
             assert_eq!(state.position, 0);
         }
 
@@ -311,34 +300,21 @@ mod test {
             "a".to_string(),
         )));
         if let crate::Screen::Inventory(ref state) = state.screen {
-            assert_eq!(state.filtered_items, vec![item_0, item_1]);
+            assert_eq!(state.filtered_items, vec![items[0].clone(), items[1].clone()]);
         }
 
         let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
             "b".to_string(),
         )));
         if let crate::Screen::Inventory(state) = state.screen {
-            assert_eq!(state.filtered_items, vec![item_2]);
+            assert_eq!(state.filtered_items, vec![items[2].clone()]);
         }
     }
 
     #[test]
     fn refresh() {
         let mut state = init_state();
-        let items = vec![
-            shared::Item {
-                barcode: "0".to_string(),
-                ..Default::default()
-            },
-            shared::Item {
-                barcode: "1".to_string(),
-                ..Default::default()
-            },
-            shared::Item {
-                barcode: "2".to_string(),
-                ..Default::default()
-            },
-        ];
+        let items = sample_items();
         let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
 
         if let crate::Screen::Inventory(ref mut state) = state.screen {
@@ -370,20 +346,7 @@ mod test {
     #[test]
     fn on_position_change() {
         let mut state = init_state();
-        let items = vec![
-            shared::Item {
-                barcode: "0".to_string(),
-                ..Default::default()
-            },
-            shared::Item {
-                barcode: "1".to_string(),
-                ..Default::default()
-            },
-            shared::Item {
-                barcode: "2".to_string(),
-                ..Default::default()
-            },
-        ];
+        let items = sample_items();
         let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
         if let crate::Screen::Inventory(ref state) = state.screen {
             assert_eq!(state.position, 0);

@@ -17,7 +17,7 @@
         "name": "name",
         "type_info": {
           "type": "VarString",
-          "flags": "",
+          "flags": "NOT_NULL | NO_DEFAULT_VALUE",
           "max_size": 256
         }
       },
@@ -54,7 +54,7 @@
     },
     "nullable": [
       true,
-      true,
+      false,
       false,
       false,
       true

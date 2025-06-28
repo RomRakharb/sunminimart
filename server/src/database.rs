@@ -52,8 +52,14 @@ pub(crate) async fn sync_database() -> Result<(), AppError> {
         println!("{:?}", item);
         sqlx::query!(
             "
-                INSERT IGNORE INTO items (barcode, name, cost, price, quantity)
+                INSERT INTO items (barcode, name, cost, price, quantity)
                 VALUES (?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                name = VALUES(name),
+                cost = VALUES(cost),
+                price = VALUES(price),
+                quantity = VALUES(quantity),
+                image = VALUES(image);
             ",
             item.0,
             item.1,
@@ -65,9 +71,9 @@ pub(crate) async fn sync_database() -> Result<(), AppError> {
         .await?;
 
         let ymd: Vec<&str> = item.5.split('-').collect();
-        if ymd.len() >= 3 {
+        if ymd.len() == 3 && ymd[0].len() == 4 && ymd[1].len() == 2 && ymd[2].len() == 2 {
             if let Some(date) =
-                NaiveDate::from_ymd_opt(ymd[0].parse()?, ymd[1].parse()?, ymd[2].parse()?)
+                NaiveDate::from_ymd_opt(ymd[2].parse()?, ymd[1].parse()?, ymd[0].parse()?)
             {
                 sqlx::query!(
                     "

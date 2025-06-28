@@ -1,8 +1,10 @@
 use axum::{Router, routing::get};
-use server::get_items;
+use server::{get_items, sync_database};
 
 #[tokio::main]
 async fn main() {
+    sync_database().await;
+
     // build our application with a single route
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))

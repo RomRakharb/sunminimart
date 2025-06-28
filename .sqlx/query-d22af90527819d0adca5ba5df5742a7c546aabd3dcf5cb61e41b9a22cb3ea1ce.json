@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "\n                INSERT INTO items (barcode, name, cost, price, quantity)\n                VALUES (?, ?, ?, ?, ?)\n                ON DUPLICATE KEY UPDATE\n                name = VALUES(name),\n                cost = VALUES(cost),\n                price = VALUES(price),\n                quantity = VALUES(quantity),\n                image = VALUES(image);\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "d22af90527819d0adca5ba5df5742a7c546aabd3dcf5cb61e41b9a22cb3ea1ce"
+}

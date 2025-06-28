@@ -2,6 +2,11 @@
 name = "client"
 version = "0.1.0"
 edition = "2024"
+include = [
+    "src/**/*",        # All files under src directory
+    "asset/**/*",      # All files under asset directory
+    "Cargo.toml",      # The manifest itself
+]
 
 [dependencies]
 serde.workspace = true
