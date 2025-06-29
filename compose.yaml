@@ -1,4 +1,17 @@
 services:
+  app:
+    image: rust:latest
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${MYSQL_DATABASE}"
+      OLD_DATABASE_URL: "mysql://root:sunminimart@192.168.1.13:3306/sunminimart"
+    command: /workdir/server
+    volumes:
+      - ./target/debug/server:/workdir/server
+    depends_on:
+      - db
+
   db:
     image: mariadb:latest
     restart: unless-stopped
