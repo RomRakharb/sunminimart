@@ -1,4 +1,4 @@
-pub(crate) mod custom_component;
+pub(crate) mod custom;
 pub(crate) mod screen;
 
 use iced::{Element, Subscription, Task};

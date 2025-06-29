@@ -1,15 +1,14 @@
 use iced::alignment::Horizontal;
 use iced::keyboard::key::Named;
 use iced::widget::{
-    button, column, container, horizontal_space, keyed_column, row, scrollable, text
-    , text_input, vertical_space,
+    button, column, container, horizontal_space, keyed_column, row, scrollable, text, text_input,
+    vertical_space,
 };
-use iced::{color, keyboard, Color, Element, Length, Pixels, Subscription, Task};
+use iced::{Color, Element, Length, Pixels, Subscription, Task, color, keyboard};
 use reqwest;
 use serde_json;
-use std::any::Any;
 
-use crate::custom_component;
+use crate::custom;
 use shared::Item;
 
 #[derive(Default, Debug, PartialEq)]
@@ -28,7 +27,7 @@ pub(crate) enum Action {
 }
 
 #[derive(Debug, Clone)]
-pub enum Message {
+pub(crate) enum Message {
     Back,
     OnSearchChange(String),
     Refresh,
@@ -124,9 +123,9 @@ pub(super) async fn fetch_items(url: String) -> Vec<Item> {
     output_items
 }
 
-pub fn view<'a>(state: &'a State) -> Element<'a, crate::Message> {
+pub fn view(state: &State) -> Element<crate::Message> {
     column![
-        custom_component::title("คลังสินค้า"),
+        custom::title("คลังสินค้า"),
         vertical_space(),
         row![
             horizontal_space(),
@@ -176,6 +175,16 @@ pub fn view<'a>(state: &'a State) -> Element<'a, crate::Message> {
             .spacing(Pixels(10.0)),
             horizontal_space(),
             column![
+                custom::button("test"),
+                custom::button("test"),
+                custom::button("test"),
+                custom::button("test"),
+            ]
+            .width(Length::Fill)
+            .align_x(Horizontal::Center)
+            .spacing(Pixels(20.0)),
+            horizontal_space(),
+            column![
                 row![
                     text("รหัสสินค้า: ").width(Length::Fill),
                     text_input("", &state.current_item.barcode)
@@ -216,9 +225,9 @@ pub fn view<'a>(state: &'a State) -> Element<'a, crate::Message> {
         .height(Length::FillPortion(12)),
         vertical_space()
     ]
-        .height(Length::Fill)
-        .width(Length::Fill)
-        .into()
+    .height(Length::Fill)
+    .width(Length::Fill)
+    .into()
 }
 
 pub(crate) fn subscription(_state: &State) -> Subscription<crate::Message> {
@@ -249,17 +258,17 @@ mod test {
 
     fn sample_items() -> Vec<Item> {
         vec![
-            shared::Item {
+            Item {
                 barcode: "0".to_string(),
                 name: "a".to_string(),
                 ..Default::default()
             },
-            shared::Item {
+            Item {
                 barcode: "1".to_string(),
                 name: "a".to_string(),
                 ..Default::default()
             },
-            shared::Item {
+            Item {
                 barcode: "2".to_string(),
                 name: "b".to_string(),
                 ..Default::default()
@@ -408,19 +417,23 @@ mod test {
             Action::Down,
         )));
 
-        let selected_item = if let crate::Screen::Inventory(state) = &state.screen {
-            state.filtered_items[state.position].clone()
-        } else {
-            panic!("Wrong screen state");
-        };
-
         let _ = state.update(crate::Message::Inventory(Message::OnSearchSubmit));
-
         if let crate::Screen::Inventory(local_state) = &state.screen {
             assert_eq!(
                 local_state.current_item,
                 local_state.filtered_items[local_state.position]
             );
+        } else {
+            panic!()
         }
+    }
+
+    #[test]
+    fn on_name_change() {
+        let mut state = init_state();
+        let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(
+            sample_items(),
+        )));
+        let _ = state.update(crate::Message::Inventory(Message::OnSearchSubmit));
     }
 }
