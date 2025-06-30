@@ -31,7 +31,7 @@ impl State {
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match self.screen {
             Screen::Home => home::update(self, message),
-            Screen::Inventory(_) => inventory::update(self, message),
+            Screen::Inventory(_) => inventory::update(self, message).map(Message::Inventory),
             Screen::Setting(_) => {
                 setting::update(self, message);
                 Task::none()

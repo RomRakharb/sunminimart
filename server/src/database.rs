@@ -49,7 +49,6 @@ pub(crate) async fn sync_database() -> Result<(), AppError> {
                 continue;
             }
         }
-        println!("{:?}", item);
         sqlx::query!(
             "
                 INSERT INTO items (barcode, name, cost, price, quantity)
