@@ -7,18 +7,9 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
 
-use std::path::PathBuf;
-
-pub(crate) fn get_settings_path() -> PathBuf {
-    // CARGO_MANIFEST_DIR will point to the client directory
-    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest_dir.join("asset").join("setting.json")
-}
-
-// If you still want a constant path for some reason:
 pub(crate) const PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/asset/setting.json");
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub(crate) struct State {
     pub(crate) url: String,
 }
