@@ -1,7 +1,7 @@
 use iced::widget::container::Style;
 use iced::widget::text::Shaping;
 use iced::widget::{button, column, container, horizontal_space, row, text};
-use iced::{color, Alignment, Border, Element, Length, Pixels, Task};
+use iced::{Alignment, Border, Element, Length, Pixels, Task, color};
 
 // use crate::screen::{inventory, setting};
 use super::{inventory, setting};
@@ -12,10 +12,7 @@ pub enum Message {
     GotoSetting,
 }
 
-pub fn update(
-    state: &mut crate::State,
-    message: crate::Message,
-) -> Task<crate::Message> {
+pub fn update(state: &mut crate::State, message: crate::Message) -> Task<crate::Message> {
     if let crate::Message::Home(message) = message {
         match message {
             Message::GotoInventory => {
@@ -70,7 +67,9 @@ pub fn view<'a>() -> Element<'a, crate::Message> {
         })
         .width(Length::Fill),
         horizontal_space().width(Length::Fill),
-    ]).center(Length::Fill).into()
+    ])
+    .center(Length::Fill)
+    .into()
 }
 
 #[cfg(test)]

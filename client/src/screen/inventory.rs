@@ -1,3 +1,4 @@
+use chrono::Datelike;
 use iced::alignment::{Horizontal, Vertical};
 use iced::keyboard::key;
 use iced::widget::text::LineHeight;
@@ -6,6 +7,7 @@ use iced::widget::{
     vertical_space,
 };
 use iced::{Color, Element, Length, Pixels, Subscription, Task, color, keyboard};
+use iced_aw::date_picker;
 use reqwest;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
@@ -40,17 +42,23 @@ pub(crate) enum Mode {
 #[derive(Debug, Clone)]
 pub enum Message {
     Back,
-    OnSearchChange(String),
     IsSearchFocus(bool),
+    OnSearchChange(String),
     OnSearchSubmit,
     Refresh,
+
     FetchItems,
     ItemsFetched(Vec<Item>),
+
     ChangePosition(key::Named),
     PositionChanged(key::Named, bool),
+
     EnterEditMode,
+
     OnNameChange(String),
     OnCostChange(String),
+    OnPriceChange(String),
+    OnQuantityChange(String),
 }
 
 pub fn update(state: &mut crate::State, message: crate::Message) -> Task<Message> {
@@ -93,6 +101,22 @@ pub fn update(state: &mut crate::State, message: crate::Message) -> Task<Message
                         if let Some(cost) = Decimal::from_f32(cost) {
                             state.current_item.cost = cost;
                         }
+                    }
+                });
+            }
+            Message::OnPriceChange(price) => {
+                modify(state, |state| {
+                    if let Ok(price) = price.parse::<f32>() {
+                        if let Some(price) = Decimal::from_f32(price) {
+                            state.current_item.price = price;
+                        }
+                    }
+                });
+            }
+            Message::OnQuantityChange(quantity) => {
+                modify(state, |state| {
+                    if let Ok(quantity) = quantity.parse::<i32>() {
+                        state.current_item.quantity = quantity;
                     }
                 });
             }
@@ -231,51 +255,75 @@ pub fn view(state: &State) -> Element<crate::Message> {
             .spacing(Pixels(10.0)),
             horizontal_space(),
             column![
-                custom::button("แก้ไขข้อมูลสินค้า")
-                    .on_press(crate::Message::Inventory(Message::EnterEditMode))
-                    .padding(20),
-                custom::button("ลบสินค้า").padding(20),
-                custom::button("เพิ่มรายการสินค้า").padding(20),
-                custom::button("เพิ่มจำนวนสินค้า").padding(20),
-                custom::button("เพิ่มรายการสินค้า").padding(20),
+                custom::button(
+                    "แก้ไขข้อมูลสินค้า",
+                    crate::Message::Inventory(Message::EnterEditMode)
+                )
+                .padding(20),
+                // custom::button("ลบสินค้า").padding(20),
+                // custom::button("เพิ่มรายการสินค้า").padding(20),
+                // custom::button("เพิ่มจำนวนสินค้า").padding(20),
+                // custom::button("เพิ่มรายการสินค้า").padding(20),
             ]
             .width(Length::FillPortion(2))
             .align_x(Horizontal::Center)
             .spacing(Pixels(20.0)),
             horizontal_space(),
             column![
-                row![
-                    text("รหัสสินค้า: ").width(Length::Fill),
-                    text_input("", &state.current_item.barcode)
-                        .id(text_input::Id::new("barcode"))
-                        .width(Length::FillPortion(4))
-                ],
-                row![
-                    text("ชื่อ: ")
-                        .shaping(text::Shaping::Advanced)
-                        .width(Length::Fill),
-                    text_input("", &state.current_item.name)
-                        .id(text_input::Id::new("name"))
-                        .width(Length::FillPortion(4))
-                ],
-                row![
-                    text("ต้นทุน: ").width(Length::Fill),
-                    text_input("", &state.current_item.cost.to_string())
-                        .id(text_input::Id::new("cost"))
-                        .width(Length::FillPortion(4))
-                ],
-                row![
-                    text("ราคา: ").width(Length::Fill),
-                    text_input("", &state.current_item.price.to_string())
-                        .id(text_input::Id::new("price"))
-                        .width(Length::FillPortion(4))
-                ],
-                row![
-                    text("จำนวน: ").width(Length::Fill),
-                    text_input("", &state.current_item.quantity.to_string())
-                        .id(text_input::Id::new("quantity"))
-                        .width(Length::FillPortion(4))
-                ]
+                custom::labeled_text_input(
+                    "รหัสสินค้า: ",
+                    &state.current_item.barcode,
+                    Some("barcode"),
+                    None
+                ),
+                custom::labeled_text_input(
+                    "ชื่อ: ",
+                    &state.current_item.name,
+                    Some("name"),
+                    Some(text::Shaping::Advanced)
+                ),
+                custom::labeled_text_input(
+                    "ต้นทุน: ",
+                    &state.current_item.cost.to_string(),
+                    Some("cost"),
+                    None
+                ),
+                custom::labeled_text_input(
+                    "ราคา: ",
+                    &state.current_item.price.to_string(),
+                    Some("price"),
+                    None
+                ),
+                custom::labeled_text_input(
+                    "จำนวน: ",
+                    &state.current_item.quantity.to_string(),
+                    Some("quantity"),
+                    None
+                ),
+                scrollable(keyed_column(
+                    state
+                        .current_item
+                        .expire_date
+                        .iter()
+                        .enumerate()
+                        .map(|(i, expire_date)| {
+                            (
+                                i,
+                                container(date_picker(
+                                    false,
+                                    date_picker::Date {
+                                        year: expire_date.expire_date.year(),
+                                        month: expire_date.expire_date.month(),
+                                        day: expire_date.expire_date.day(),
+                                    },
+                                    underlay,
+                                    on_cancel,
+                                    on_submit,
+                                ))
+                                .into(),
+                            )
+                        })
+                )),
             ]
             .width(Length::FillPortion(6))
             .spacing(Pixels(10.0)),
@@ -344,6 +392,17 @@ mod test {
         ]
     }
 
+    fn test<F>(state: &crate::State, f: F)
+    where
+        F: FnOnce(&State),
+    {
+        if let crate::Screen::Inventory(state) = &state.screen {
+            f(state);
+        } else {
+            panic!("Screen error in inventory");
+        }
+    }
+
     #[test]
     fn back() {
         let mut state = init_state();
@@ -352,12 +411,12 @@ mod test {
     }
 
     #[test]
-    fn items_fetched() {
+    fn fetch_item() {
         let items = sample_items();
         let mut state = init_state();
 
         let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.all_items.len(), 3);
             assert_eq!(state.all_items[0].barcode, "0".to_string());
             assert_eq!(state.all_items[1].barcode, "1".to_string());
@@ -366,7 +425,7 @@ mod test {
     }
 
     #[test]
-    fn on_search_change() {
+    fn search() {
         let items = sample_items();
         let mut state = init_state();
         let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(
@@ -376,34 +435,44 @@ mod test {
         let _ = state.update(crate::Message::Inventory(Message::ChangePosition(
             key::Named::ArrowDown,
         )));
-        modify(&mut state, |state| {
-            assert_eq!(state.all_items, state.filtered_items);
+        test(&state, |state| {
+            assert_eq!(state.filtered_items, state.all_items);
             assert_eq!(state.position, 1);
         });
 
+        // Search from barcode and reset position on search
         let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
             "1".to_string(),
         )));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.filtered_items, vec![items[1].clone()]);
             assert_eq!(state.position, 0);
         });
 
+        // Search from Name
         let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
             "a".to_string(),
         )));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(
                 state.filtered_items,
                 vec![items[0].clone(), items[1].clone()]
             );
         });
 
+        // Submit as normal
+        let _ = state.update(crate::Message::Inventory(Message::OnSearchSubmit));
+        test(&state, |state| {
+            assert_eq!(state.current_item, state.filtered_items[state.position]);
+        });
+
+        // Submit when empty
         let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
-            "b".to_string(),
+            "aa".to_string(),
         )));
-        modify(&mut state, |state| {
-            assert_eq!(state.filtered_items, vec![items[2].clone()]);
+        let _ = state.update(crate::Message::Inventory(Message::OnSearchSubmit));
+        test(&state, |state| {
+            assert_eq!(state.current_item, Item::default());
         });
     }
 
@@ -428,7 +497,7 @@ mod test {
             key::Named::ArrowDown,
         )));
         let _ = state.update(crate::Message::Inventory(Message::Refresh));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             // TODO: Find a way to test whether search is focused
             // assert!(state.search.focus);
             assert_eq!(state.all_items, state.filtered_items);
@@ -449,21 +518,21 @@ mod test {
         let mut state = init_state();
         let items = sample_items();
         let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(items)));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.position, 0);
         });
 
         let _ = state.update(crate::Message::Inventory(Message::ChangePosition(
             key::Named::ArrowDown,
         )));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.position, 1);
         });
 
         let _ = state.update(crate::Message::Inventory(Message::ChangePosition(
             key::Named::ArrowUp,
         )));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.position, 0);
         });
 
@@ -476,46 +545,20 @@ mod test {
         let _ = state.update(crate::Message::Inventory(Message::ChangePosition(
             key::Named::ArrowDown,
         )));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.position, 2);
-        });
-    }
-
-    #[test]
-    fn on_search_submit() {
-        let mut state = init_state();
-        let _ = state.update(crate::Message::Inventory(Message::ItemsFetched(
-            sample_items(),
-        )));
-        let _ = state.update(crate::Message::Inventory(Message::ChangePosition(
-            key::Named::ArrowUp,
-        )));
-
-        // Select as normal
-        let _ = state.update(crate::Message::Inventory(Message::OnSearchSubmit));
-        modify(&mut state, |state| {
-            assert_eq!(state.current_item, state.filtered_items[state.position]);
-        });
-
-        // Select when empty
-        let _ = state.update(crate::Message::Inventory(Message::OnSearchChange(
-            "aa".to_string(),
-        )));
-        let _ = state.update(crate::Message::Inventory(Message::OnSearchSubmit));
-        modify(&mut state, |state| {
-            assert_eq!(state.current_item, Item::default());
         });
     }
 
     #[test]
     fn enter_mode() {
         let mut state = init_state();
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.mode, Mode::Search);
         });
 
         let _ = state.update(crate::Message::Inventory(Message::EnterEditMode));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.mode, Mode::Edit);
         });
 
@@ -534,17 +577,32 @@ mod test {
         let _ = state.update(crate::Message::Inventory(Message::OnNameChange(
             "ขนม sunminimart".to_string(),
         )));
-        modify(&mut state, |state| {
+        test(&state, |state| {
             assert_eq!(state.current_item.name, "ขนม sunminimart".to_string());
         });
 
         // Edit cost
         let _ = state.update(crate::Message::Inventory(Message::OnCostChange(
-            "17".to_string(),
+            "16.5".to_string(),
         )));
-        modify(&mut state, |state| {
-            assert_eq!(state.current_item.cost, Decimal::new(17, 0));
+        test(&state, |state| {
+            assert_eq!(state.current_item.cost, Decimal::new(165, 1));
         });
-        todo!()
+
+        // Edit price
+        let _ = state.update(crate::Message::Inventory(Message::OnPriceChange(
+            "21".to_string(),
+        )));
+        test(&state, |state| {
+            assert_eq!(state.current_item.price, Decimal::new(21, 0))
+        });
+
+        // Edit quantity
+        let _ = state.update(crate::Message::Inventory(Message::OnQuantityChange(
+            10.to_string(),
+        )));
+        test(&state, |state| {
+            assert_eq!(state.current_item.quantity, 10);
+        })
     }
 }
