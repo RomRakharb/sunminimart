@@ -59,6 +59,15 @@ pub enum Message {
     OnCostChange(String),
     OnPriceChange(String),
     OnQuantityChange(String),
+
+    ExpireDate(DatePicker),
+}
+
+#[derive(Debug, Clone)]
+enum DatePicker {
+    Open,
+    Cancel,
+    Submit(date_picker::Date),
 }
 
 pub fn update(state: &mut crate::State, message: crate::Message) -> Task<Message> {
@@ -165,6 +174,11 @@ pub fn update(state: &mut crate::State, message: crate::Message) -> Task<Message
                     state.mode = Mode::Edit;
                 });
             }
+            Message::ExpireDate(message) => match message {
+                DatePicker::Open => {}
+                DatePicker::Cancel => {}
+                DatePicker::Submit(_) => {}
+            },
         }
     } else {
         panic!("Message error in inventory");
@@ -219,36 +233,31 @@ pub fn view(state: &State) -> Element<crate::Message> {
                     button("refresh").on_press(crate::Message::Inventory(Message::Refresh))
                 ]
                 .spacing(Pixels(10.0)),
-                scrollable(keyed_column(state.filtered_items.iter().enumerate().map(
-                    |(i, item)| {
-                        (
-                            i,
-                            container(row![
-                                text(item.barcode.clone())
-                                    .line_height(LineHeight::Relative(2.0))
-                                    .width(Length::Fill)
-                                    .align_x(Horizontal::Center),
-                                text(item.name.clone())
-                                    .line_height(LineHeight::Relative(2.0))
-                                    .shaping(text::Shaping::Advanced)
-                                    .width(Length::Fill)
-                                    .align_x(Horizontal::Center)
-                            ])
-                            .style(move |_| {
-                                if i == state.position {
-                                    container::Style {
-                                        background: Some(iced::Background::Color(color!(0x4169e1))),
-                                        text_color: Some(Color::WHITE),
-                                        ..Default::default()
-                                    }
-                                } else {
-                                    container::Style::default()
-                                }
-                            })
-                            .into(),
-                        )
-                    }
-                )))
+                custom::list(state.filtered_items.clone(), |i, item| {
+                    container(row![
+                        text(item.barcode.clone())
+                            .line_height(LineHeight::Relative(2.0))
+                            .width(Length::Fill)
+                            .align_x(Horizontal::Center),
+                        text(item.name.clone())
+                            .line_height(LineHeight::Relative(2.0))
+                            .shaping(text::Shaping::Advanced)
+                            .width(Length::Fill)
+                            .align_x(Horizontal::Center)
+                    ])
+                    .style(move |_| {
+                        if i == state.position {
+                            container::Style {
+                                background: Some(iced::Background::Color(color!(0x4169e1))),
+                                text_color: Some(Color::WHITE),
+                                ..Default::default()
+                            }
+                        } else {
+                            container::Style::default()
+                        }
+                    })
+                    .into()
+                })
                 .width(Length::Fill)
             ]
             .width(Length::FillPortion(6))
@@ -300,30 +309,30 @@ pub fn view(state: &State) -> Element<crate::Message> {
                     Some("quantity"),
                     None
                 ),
-                scrollable(keyed_column(
-                    state
-                        .current_item
-                        .expire_date
-                        .iter()
-                        .enumerate()
-                        .map(|(i, expire_date)| {
-                            (
-                                i,
-                                container(date_picker(
-                                    false,
-                                    date_picker::Date {
-                                        year: expire_date.expire_date.year(),
-                                        month: expire_date.expire_date.month(),
-                                        day: expire_date.expire_date.day(),
-                                    },
-                                    underlay,
-                                    on_cancel,
-                                    on_submit,
-                                ))
-                                .into(),
-                            )
-                        })
-                )),
+                // scrollable(keyed_column(
+                //     state
+                //         .current_item
+                //         .expire_date
+                //         .iter()
+                //         .enumerate()
+                //         .map(|(i, expire_date)| {
+                //             (
+                //                 i,
+                //                 container(date_picker(
+                //                     false,
+                //                     date_picker::Date {
+                //                         year: expire_date.expire_date.year(),
+                //                         month: expire_date.expire_date.month(),
+                //                         day: expire_date.expire_date.day(),
+                //                     },
+                //                     underlay,
+                //                     on_cancel,
+                //                     on_submit,
+                //                 ))
+                //                 .into(),
+                //             )
+                //         })
+                // )),
             ]
             .width(Length::FillPortion(6))
             .spacing(Pixels(10.0)),

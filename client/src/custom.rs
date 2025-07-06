@@ -1,7 +1,10 @@
 use crate::Message;
 use iced::alignment::{Horizontal, Vertical};
-use iced::widget::{self, Button, Container, Row, container, row, text, text_input};
-use iced::{Length, Pixels};
+use iced::widget::{
+    self, Button, Container, Row, Scrollable, container, keyed_column, row, scrollable, text,
+    text_input,
+};
+use iced::{Element, Length, Pixels};
 
 pub(crate) fn title<'a>(value: impl text::IntoFragment<'a>) -> Container<'a, Message> {
     container(text(value).size(Pixels(30.0)))
@@ -38,4 +41,15 @@ pub(crate) fn labeled_text_input<'a>(
     }
 
     row![input_label, text_input]
+}
+
+pub(crate) fn list<'a, T, F>(list: Vec<T>, f: F) -> Scrollable<'a, Message>
+where
+    F: Fn(usize, &T) -> Element<'a, Message>,
+{
+    scrollable(keyed_column(
+        list.iter()
+            .enumerate()
+            .map(|(i, element)| (i, f(i, element))),
+    ))
 }

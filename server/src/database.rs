@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use dotenv::dotenv;
 use rust_decimal::Decimal;
-use sqlx::MySqlPool;
+use sqlx::{FromRow, MySqlPool};
 use tokio::sync::OnceCell;
 
 use crate::AppError;
@@ -102,9 +102,14 @@ pub(crate) async fn select_items() -> sqlx::Result<Vec<Item>> {
     Ok(items)
 }
 
-pub(crate) async fn select_expire_dates(barcode: &String) -> sqlx::Result<Vec<shared::ExpireDate>> {
-    let expire_dates: Vec<shared::ExpireDate> = sqlx::query_as!(
-        shared::ExpireDate,
+pub(crate) async fn select_expire_dates(barcode: &String) -> sqlx::Result<Vec<NaiveDate>> {
+    #[derive(FromRow)]
+    struct ExpireDate {
+        expire_date: NaiveDate,
+    }
+
+    let expire_dates: Vec<ExpireDate> = sqlx::query_as!(
+        ExpireDate,
         "
         SELECT expire_date FROM expire_dates
         WHERE ref_barcode = ?;
@@ -113,6 +118,12 @@ pub(crate) async fn select_expire_dates(barcode: &String) -> sqlx::Result<Vec<sh
     )
     .fetch_all(pool().await)
     .await?;
+
+    let expire_dates = expire_dates
+        .into_iter()
+        .map(|expire_date| expire_date.expire_date)
+        .collect();
+
     Ok(expire_dates)
 }
 

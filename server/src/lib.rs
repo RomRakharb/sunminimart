@@ -6,9 +6,10 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Json},
 };
+use chrono::NaiveDate;
 use futures::future::try_join_all;
 use serde_json::json;
-use shared::{BulkItem, ExpireDate, Item};
+use shared::{BulkItem, Item};
 
 #[derive(Debug)]
 pub enum AppError {
@@ -53,7 +54,7 @@ pub async fn get_items() -> Result<Json<Vec<Item>>, AppError> {
 
     let items = item_details.into_iter().map(|item| async move {
         let bulk_items: Vec<BulkItem> = database::select_bulk_items(&item.barcode).await?;
-        let expire_dates: Vec<ExpireDate> = database::select_expire_dates(&item.barcode).await?;
+        let expire_dates: Vec<NaiveDate> = database::select_expire_dates(&item.barcode).await?;
 
         Ok::<Item, AppError>(Item {
             barcode: item.barcode,

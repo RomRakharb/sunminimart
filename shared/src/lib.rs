@@ -10,7 +10,7 @@ pub struct Item {
     pub price: Decimal,
     pub quantity: i32,
     pub image: Option<Vec<u8>>,
-    pub expire_date: Vec<ExpireDate>,
+    pub expire_date: Vec<NaiveDate>,
     pub bulk_item: Vec<BulkItem>,
 }
 
@@ -21,11 +21,6 @@ pub struct BulkItem {
     pub price: Decimal,
     pub quantity: i32,
     pub image: Option<Vec<u8>>,
-}
-
-#[derive(Default, Debug, PartialEq, Serialize, Deserialize, Clone)]
-pub struct ExpireDate {
-    pub expire_date: NaiveDate,
 }
 
 pub fn add(left: u64, right: u64) -> u64 {
