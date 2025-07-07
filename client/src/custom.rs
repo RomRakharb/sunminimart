@@ -1,4 +1,5 @@
 use crate::Message;
+use chrono::NaiveDate;
 use iced::alignment::{Horizontal, Vertical};
 use iced::widget::{
     self, Button, Container, Row, Scrollable, container, keyed_column, row, scrollable, text,
@@ -52,4 +53,48 @@ where
             .enumerate()
             .map(|(i, element)| (i, f(i, element))),
     ))
+}
+
+mod deletable_list {
+    use iced::{
+        Element,
+        widget::{button, keyed_column, row, scrollable, text, text_input},
+    };
+
+    pub struct DeletableList<T> {
+        list: Vec<T>,
+    }
+
+    pub enum Message {
+        Change(String),
+        Submit,
+        Delete,
+        Add,
+    }
+
+    pub enum View {}
+
+    struct App<T> {
+        view: View,
+        list: Vec<T>,
+    }
+
+    impl<T> DeletableList<T> {
+        pub fn view(&self) -> Element<Message> {
+            scrollable(keyed_column(self.list.iter().enumerate().map(
+                |(i, value)| {
+                    (
+                        i,
+                        row![
+                            text(format!("{i}: ")),
+                            text_input("", value.into()),
+                            button("x")
+                        ]
+                        .into(),
+                    )
+                },
+            )))
+            .into()
+        }
+    }
 }

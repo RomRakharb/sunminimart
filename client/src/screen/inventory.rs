@@ -60,11 +60,11 @@ pub enum Message {
     OnPriceChange(String),
     OnQuantityChange(String),
 
-    ExpireDate(DatePicker),
+    ExpireDate(ExpireDate),
 }
 
 #[derive(Debug, Clone)]
-enum DatePicker {
+enum ExpireDate {
     Open,
     Cancel,
     Submit(date_picker::Date),
@@ -175,9 +175,9 @@ pub fn update(state: &mut crate::State, message: crate::Message) -> Task<Message
                 });
             }
             Message::ExpireDate(message) => match message {
-                DatePicker::Open => {}
-                DatePicker::Cancel => {}
-                DatePicker::Submit(_) => {}
+                ExpireDate::Open => {}
+                ExpireDate::Cancel => {}
+                ExpireDate::Submit(_) => {}
             },
         }
     } else {
@@ -309,30 +309,9 @@ pub fn view(state: &State) -> Element<crate::Message> {
                     Some("quantity"),
                     None
                 ),
-                // scrollable(keyed_column(
-                //     state
-                //         .current_item
-                //         .expire_date
-                //         .iter()
-                //         .enumerate()
-                //         .map(|(i, expire_date)| {
-                //             (
-                //                 i,
-                //                 container(date_picker(
-                //                     false,
-                //                     date_picker::Date {
-                //                         year: expire_date.expire_date.year(),
-                //                         month: expire_date.expire_date.month(),
-                //                         day: expire_date.expire_date.day(),
-                //                     },
-                //                     underlay,
-                //                     on_cancel,
-                //                     on_submit,
-                //                 ))
-                //                 .into(),
-                //             )
-                //         })
-                // )),
+                custom::list(state.current_item.expire_date.clone(), |i, expire_date| {
+                    row![text(format!("{i}: ")), text_input("", ""), button("x")].into()
+                }),
             ]
             .width(Length::FillPortion(6))
             .spacing(Pixels(10.0)),
