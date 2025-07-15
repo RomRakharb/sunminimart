@@ -23,6 +23,11 @@ pub struct BulkItem {
     pub image: Option<Vec<u8>>,
 }
 
+pub struct Header {
+    barcode: String,
+    name: String,
+}
+
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
 }

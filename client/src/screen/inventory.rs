@@ -3,11 +3,9 @@ use iced::alignment::{Horizontal, Vertical};
 use iced::keyboard::key;
 use iced::widget::text::LineHeight;
 use iced::widget::{
-    button, column, container, horizontal_space, keyed_column, row, scrollable, text, text_input,
-    vertical_space,
+    button, column, container, horizontal_space, row, text, text_input, vertical_space,
 };
 use iced::{Color, Element, Length, Pixels, Subscription, Task, color, keyboard};
-use iced_aw::date_picker;
 use reqwest;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
@@ -59,15 +57,6 @@ pub enum Message {
     OnCostChange(String),
     OnPriceChange(String),
     OnQuantityChange(String),
-
-    ExpireDate(ExpireDate),
-}
-
-#[derive(Debug, Clone)]
-enum ExpireDate {
-    Open,
-    Cancel,
-    Submit(date_picker::Date),
 }
 
 pub fn update(state: &mut crate::State, message: crate::Message) -> Task<Message> {
@@ -174,11 +163,6 @@ pub fn update(state: &mut crate::State, message: crate::Message) -> Task<Message
                     state.mode = Mode::Edit;
                 });
             }
-            Message::ExpireDate(message) => match message {
-                ExpireDate::Open => {}
-                ExpireDate::Cancel => {}
-                ExpireDate::Submit(_) => {}
-            },
         }
     } else {
         panic!("Message error in inventory");

@@ -1,17 +1,17 @@
 # Sunminimart / ซันมินิมาร์ท
 
 Sunminimart is my first real project and my first attemp at learning [`iced`](https://iced.rs/), a rust GUI library.
-The project's purpose is to be used in "Sunminimart", a shop owned by my sister(formerly by my mother).
+The project's purpose is to be used in "Sunminimart", a shop owned by my sister (formerly by my mother).
 
 ## Features
+
 - Manage inventory
 - Sale frontend
 - Ledger
 
-
 ## usage
 
-1. set `.env` file.
+1. set environment variables.
 
 ```
   MYSQL_ROOT_PASSWORD=root_password
@@ -24,5 +24,6 @@ The project's purpose is to be used in "Sunminimart", a shop owned by my sister(
 ```
 
 2. get tools
-  - sqlx-cli
-  - bacon
+
+- sqlx-cli
+- bacon
