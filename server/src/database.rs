@@ -92,14 +92,25 @@ pub(crate) async fn sync_database() -> Result<(), AppError> {
     Ok(())
 }
 
+pub(crate) async fn select_headers() -> sqlx::Result<Vec<shared::Header>> {
+    sqlx::query_as!(shared::Header, "SELECT barcode, name FROM items")
+        .fetch_all(pool().await)
+        .await
+}
+
+pub(crate) async fn select_header(keyword: &str) -> sqlx::Result<shared::Header> {
+    sqlx::query_as!(shared::Header, "SELECT barcode, name FROM items")
+        .fetch_one(pool().await)
+        .await
+}
+
 pub(crate) async fn select_items() -> sqlx::Result<Vec<Item>> {
-    let items: Vec<Item> = sqlx::query_as!(
+    sqlx::query_as!(
         Item,
         "SELECT barcode, name, cost, price, quantity, image FROM items"
     )
     .fetch_all(pool().await)
-    .await?;
-    Ok(items)
+    .await
 }
 
 pub(crate) async fn select_expire_dates(barcode: &String) -> sqlx::Result<Vec<NaiveDate>> {
